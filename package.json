@@ -1,0 +1,312 @@
+{
+  "name": "vscode-hermes-agent",
+  "displayName": "Hermes Agent for VS Code",
+  "description": "Full Cascade-grade AI coding agent for VS Code, powered by Hermes Agent via the Agent Client Protocol (ACP). Multi-file edits, plans, tool calls, terminal, MCP, skills, sessions, approvals — all driven from the editor.",
+  "version": "0.1.0",
+  "publisher": "hermes-agent",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "hermes",
+    "hermes-agent",
+    "nous-research",
+    "acp",
+    "agent-client-protocol",
+    "cascade",
+    "windsurf",
+    "ai-agent",
+    "code-agent",
+    "chat",
+    "tools",
+    "mcp",
+    "model-context-protocol"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermes-agent/hermes-agent-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/hermes-agent/hermes-agent-vscode/issues"
+  },
+  "homepage": "https://github.com/hermes-agent/hermes-agent-vscode#readme",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "hermes-agent",
+          "title": "Hermes Agent",
+          "icon": "media/hermes.svg"
+        }
+      ]
+    },
+    "views": {
+      "hermes-agent": [
+        {
+          "id": "hermes-agent.chat",
+          "name": "Hermes",
+          "type": "webview",
+          "icon": "media/icon-comment.svg",
+          "contextualTitle": "Hermes Agent"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "hermes-agent.openChat",
+        "title": "Open Chat",
+        "category": "Hermes",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "hermes-agent.openCascade",
+        "title": "Open Cascade Flow",
+        "category": "Hermes",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "hermes-agent.newSession",
+        "title": "New Session",
+        "category": "Hermes",
+        "icon": "$(add)"
+      },
+      {
+        "command": "hermes-agent.resumeSession",
+        "title": "Resume Session…",
+        "category": "Hermes",
+        "icon": "$(history)"
+      },
+      {
+        "command": "hermes-agent.cancelPrompt",
+        "title": "Cancel Current Prompt",
+        "category": "Hermes",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "hermes-agent.inlineEdit",
+        "title": "Edit with Hermes",
+        "category": "Hermes",
+        "icon": "$(pencil)"
+      },
+      {
+        "command": "hermes-agent.pickModel",
+        "title": "Pick Model…",
+        "category": "Hermes"
+      },
+      {
+        "command": "hermes-agent.installHermes",
+        "title": "Install / Setup Hermes",
+        "category": "Hermes",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "hermes-agent.runDoctor",
+        "title": "Hermes Doctor",
+        "category": "Hermes",
+        "icon": "$(check)"
+      },
+      {
+        "command": "hermes-agent.showStatus",
+        "title": "Hermes Status",
+        "category": "Hermes"
+      },
+      {
+        "command": "hermes-agent.openLogs",
+        "title": "View Hermes Logs",
+        "category": "Hermes"
+      },
+      {
+        "command": "hermes-agent.toggleYolo",
+        "title": "Toggle YOLO Mode",
+        "category": "Hermes",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "hermes-agent.toggleAutoApprove",
+        "title": "Toggle Auto-Approve (host)",
+        "category": "Hermes",
+        "icon": "$(check)"
+      },
+      {
+        "command": "hermes-agent.installLsp",
+        "title": "Install Language Servers",
+        "category": "Hermes"
+      },
+      {
+        "command": "hermes-agent.installBrowser",
+        "title": "Install Browser Tool (Chromium)",
+        "category": "Hermes"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "hermes-agent.openChat",
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "when": "!editorReadonly"
+      },
+      {
+        "command": "hermes-agent.openCascade",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      },
+      {
+        "command": "hermes-agent.newSession",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n"
+      },
+      {
+        "command": "hermes-agent.inlineEdit",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "hermes-agent.cancelPrompt",
+        "key": "escape",
+        "mac": "escape",
+        "when": "hermes-agent.promptInProgress"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "hermes-agent.inlineEdit",
+          "when": "editorTextFocus && !editorReadonly",
+          "group": "hermes"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "hermes-agent.openChat",
+          "group": "hermes"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Hermes Agent",
+      "properties": {
+        "hermes-agent.path": {
+          "type": "string",
+          "default": "hermes",
+          "description": "Path to the hermes executable. Default 'hermes' resolves via PATH. On Windows the installer can also detect the per-user venv location."
+        },
+        "hermes-agent.args": {
+          "type": "array",
+          "default": [
+            "acp",
+            "--accept-hooks"
+          ],
+          "description": "Arguments passed to hermes to start the ACP server."
+        },
+        "hermes-agent.env": {
+          "type": "object",
+          "default": {},
+          "description": "Extra environment variables to set when launching hermes acp (e.g. HERMES_INFERENCE_MODEL, HERMES_ACCEPT_HOOKS=1)."
+        },
+        "hermes-agent.cwd": {
+          "type": "string",
+          "description": "Working directory for ACP sessions. Defaults to the first workspace folder."
+        },
+        "hermes-agent.mcpServers": {
+          "type": "array",
+          "default": [],
+          "description": "MCP servers to pass into session/new. Each item: { name, command, args, env }."
+        },
+        "hermes-agent.yolo": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pass --yolo to hermes acp. Bypasses dangerous command approval prompts. Use at your own risk."
+        },
+        "hermes-agent.checkpoints": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable filesystem checkpoints before destructive operations."
+        },
+        "hermes-agent.maxTurns": {
+          "type": "number",
+          "default": 90,
+          "description": "Maximum tool-calling iterations per turn (passed as --max-turns)."
+        },
+        "hermes-agent.defaultMode": {
+          "type": "string",
+          "enum": [
+            "code",
+            "chat"
+          ],
+          "default": "code",
+          "description": "Cascade Code (edits) vs Chat (questions) mode for new sessions."
+        },
+        "hermes-agent.terminalApprovePattern": {
+          "type": "string",
+          "default": "**",
+          "description": "Glob of command patterns to auto-approve. Empty string means ask always."
+        },
+        "hermes-agent.autoApprove": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-accept permission requests at the host level. Picks 'allow_always' (cached for next time) when available, else 'allow_once'. Skips the QuickPick entirely. Disable to require manual approval."
+        },
+        "hermes-agent.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the Hermes status bar item (model + status + token usage)."
+        },
+        "hermes-agent.telemetry.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Send anonymous usage events to help improve the extension."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs --mode production",
+    "dev": "node scripts/build.mjs --mode development --watch",
+    "build:webview": "vite build --config vite.config.ts",
+    "build:webview:dev": "vite build --config vite.config.ts --mode development --watch",
+    "package": "node scripts/package.mjs",
+    "lint": "eslint src webview/src",
+    "format": "prettier --write .",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@agentclientprotocol/sdk": "^0.25.0",
+    "dompurify": "^3.1.6",
+    "js-yaml": "^4.1.0",
+    "marked": "^14.1.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/vscode": "^1.96.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "esbuild": "^0.23.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.0",
+    "vitest": "^2.0.5",
+    "vsce": "^2.15.0"
+  }
+}
