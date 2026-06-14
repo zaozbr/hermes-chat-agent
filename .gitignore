@@ -11,3 +11,6 @@ dist-webview/
 coverage/
 out/
 .backups/
+.agents/
+skills/
+skills-lock.json

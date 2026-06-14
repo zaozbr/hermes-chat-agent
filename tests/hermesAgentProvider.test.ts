@@ -56,7 +56,9 @@ describe('HermesAgentProvider', () => {
 
     it('should support subscribe and notify on state change', () => {
       let callCount = 0;
-      const unsub = store.subscribe(() => { callCount++; });
+      const unsub = store.subscribe(() => {
+        callCount++;
+      });
       // Trigger a state change via applyMessage
       store.applyMessage({ type: 'acp-status', payload: { connected: true } });
       expect(callCount).toBeGreaterThanOrEqual(1);

@@ -35,6 +35,20 @@ Cada ferramenta abaixo me dá contexto para tomar decisões melhores. Verifique 
 - Extensão No-Credit-Limit instalada (`hermes-agent.no-credit-limit`)
 - ✅ **MCPs**: `hermes mcp list` — 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
 - ✅ **Tabela de MCPs** abaixo para saber quais tools estão disponíveis
+- ✅ **Copilot CLI plugins**: 5 plugins instalados via `copilot plugin install`
+  - `superpowers@superpowers-marketplace` (14 skills)
+  - `episodic-memory@superpowers-marketplace` (memória entre sessões)
+  - `testing-automation@awesome-copilot` (testes/TDD)
+  - `context-engineering@awesome-copilot` (contexto otimizado)
+  - `typescript-mcp-development@awesome-copilot` (MCP SDK TS)
+
+#### 📚 Skills Consult
+
+Antes de iniciar qualquer tarefa, consulte os skills relevantes em:
+
+1. **`.agents/skills/`** — 41 skills instalados via skills.sh (Superpowers, Anthropic, Vercel, Vibe)
+2. **`skills/`** — Skills baixados manualmente para referência
+3. Use a tabela de skills abaixo para escolher qual consultar
 
 ### Passo 3: Iniciar Trabalho
 
@@ -76,6 +90,48 @@ Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
 
 ---
 
+## 🚀 COMANDO `commit!` — Protocolo de Finalização
+
+**Quando o usuário digitar `commit!` no chat, EXECUTE IMEDIATAMENTE:**
+
+### Passo 1: Documentar
+- Capture tudo da sessão: o que foi feito, lições aprendidas, conhecimento gerado
+- Atualize `PROGRESS.md` com nova seção (data + resumo)
+- Salve descobertas importantes na memória (`/memories/`)
+
+### Passo 2: Safepoint
+- Crie timestamp: `yyyyMMdd-HHmmss`
+- Crie tag git: `git tag safepoint-<timestamp>`
+- Crie diretório: `.backups/commit-<timestamp>/`
+
+### Passo 3: Backup
+- `git diff --name-only` → arquivos modificados
+- `git ls-files --others --exclude-standard` → arquivos novos
+- Copie TODOS para `.backups/commit-<timestamp>/`
+
+### Passo 4: Stage
+- `git add --all`
+
+### Passo 5: Accept (Verificação)
+- `git status --short` → mostre resumo
+- Verifique se há erros de compilação
+
+### Passo 6: Commit
+- Construa mensagem descritiva: `<tipo>(<escopo>): <descrição>`
+- `git commit -m "..."`
+
+### Passo 7: Push
+- `git push origin HEAD`
+
+### Passo 8: Resume Point (Retorno)
+- Atualize `PROGRESS.md` com checkpoint (data/hora + próximos passos)
+- Atualize user memory (`/memories/`) com lições e descobertas
+- Atualize repo memory (`/memories/repo/`) se necessário
+- Verifique se `.github/copilot-instructions.md` reflete o estado atual
+- Garanta que o header do `PROGRESS.md` tenha: `> Checkpoint em <data>. Retomar deste ponto. Comando commit! para finalizar.`
+
+---
+
 ## 🏗️ Arquitetura (visão 30s)
 
 ```
@@ -106,8 +162,9 @@ Hermes ACP (Python, hermes acp)
 | `npm run test:ui`                           | UI mode interativa    |
 | `npx tsc -p tsconfig.json --noEmit`         | Type check host       |
 | `npx tsc -p tsconfig.webview.json --noEmit` | Type check webview    |
-| `npx eslint src webview/src --quiet`        | Lint                  |
-
+| `npx eslint src webview/src --quiet`        | Lint                  || `copilot --version`                          | Verificar Copilot CLI |
+| `copilot plugin list`                        | Listar plugins ativos |
+| `copilot plugin marketplace browse <name>`   | Navegar marketplace   |
 ---
 
 ## 🧩 Extensões Integradas
@@ -127,6 +184,113 @@ Todas configuradas em `.vscode/settings.json`:
 - `bierner.markdown-mermaid` — Mermaid preview
 - `mikestead.dotenv` — .env highlight
 - `aaron-bond.better-comments` — Comentários coloridos
+
+---
+
+## 🎯 Skills Ecosystem (skills.sh)
+
+> 41 skills instaladas via `npx skills add <repo>`. O diretório `.agents/skills/` contém
+> os arquivos SKILL.md com instruções detalhadas para o agente Copilot.
+> **Consulte estes skills ANTES de iniciar qualquer tarefa complexa.**
+
+### Instalados automaticamente
+
+| Repositório               | Skills | Função                                        |
+| ------------------------- | ------ | --------------------------------------------- |
+| **obra/superpowers**      | 14     | TDD, debugging, planejamento, code review     |
+| **anthropics/skills**     | 18     | MCP builder, frontend-design, documentos      |
+| **vercel-labs/agent-skills** | 9   | React, deploy, otimização, composição         |
+| **Vibe-Skills**           | 1      | Vibes / padrões de desenvolvimento            |
+
+### Skills personalizados do projeto
+
+| Skill | Arquivo | Função |
+| ----- | ------- | ------ |
+| **hermes-agent** | `.agents/skills/hermes-agent/SKILL.md` | Arquitetura, regras (deploy/QA), fluxo ACP, build, MCP, testes — **OBRIGATÓRIO** para qualquer alteração no Hermes |
+
+### Os 14 Superpowers (mais relevantes)
+
+| Skill                        | Quando usar                                                |
+| ---------------------------- | ---------------------------------------------------------- |
+| `test-driven-development`    | Antes de codificar: escrever testes primeiro               |
+| `systematic-debugging`       | Bugs complexos: rastreamento sistemático                   |
+| `writing-plans`              | Planejamento antes de implementar grandes mudanças         |
+| `subagent-driven-development`| Delegar subtarefas para subagentes                         |
+| `brainstorming`              | Exploração de ideias e soluções criativas                  |
+| `verification-before-completion` | Verificar se a solução atende aos requisitos          |
+| `requesting-code-review`     | Pedir review de código efetivo                             |
+| `receiving-code-review`      | Processar feedback de code review                          |
+| `executing-plans`            | Executar planos passo-a-passo                              |
+| `dispatching-parallel-agents`| Trabalho paralelo com múltiplos agentes                    |
+
+### Skills da Anthropic
+
+| Skill                   | Quando usar                                     |
+| ----------------------- | ----------------------------------------------- |
+| `frontend-design`       | Design de interfaces React/componentes          |
+| `mcp-builder`           | Criar servidores MCP personalizados             |
+| `claude-api`            | Integração com API Claude                       |
+| `docx`/`pdf`/`pptx`/`xlsx` | Geração de documentos Office                 |
+| `web-artifacts-builder` | Artefatos web standalone                        |
+| `webapp-testing`        | Testes de aplicações web                        |
+| `skill-creator`         | Criar seus próprios skills                      |
+
+### Skills Vercel
+
+| Skill                          | Quando usar                              |
+| ------------------------------ | ---------------------------------------- |
+| `vercel-optimize`              | Otimização de performance                |
+| `vercel-react-best-practices`  | Melhores práticas React                  |
+| `vercel-composition-patterns`  | Padrões de composição React              |
+| `deploy-to-vercel`             | Deploy para Vercel                       |
+| `web-design-guidelines`        | Diretrizes de design web                 |
+
+### Como usar skills
+
+```
+# Consultar um skill específico (skills.sh):
+npx skills use obra/superpowers@test-driven-development
+
+# Listar skills instalados:
+npx skills ls
+
+# Usar no prompt: "Aplique o skill de TDD para implementar X"
+
+# Skills do projeto (.agents/skills/hermes-agent/):
+# São carregados automaticamente pelo contexto do projeto.
+# O skill hermes-agent contém TODAS as regras do projeto Hermes.
+# Consulte-o SEMPRE que for trabalhar neste projeto.
+```
+
+---
+
+## 🌐 Marketplaces & Registries
+
+### skills.sh (Vercel)
+- **URL**: https://skills.sh
+- **CLI**: `npx skills add <owner/repo>` — 701K+ installs, centenas de skills
+- **Instalação**: Skills instalados em `.agents/skills/` para 71 agentes diferentes
+- **Como buscar**: `npx skills find <keyword>`
+
+### Open VSX
+- **URL**: https://open-vsx.org — 14K+ extensões open-source
+- **Config**: Descomentar `extensions.gallery` em `.vscode/settings.json`
+- **Instalação manual**: Baixar .vsix → `code-insiders --install-extension <file>.vsix`
+
+### MCP Registry
+- **URL**: https://registry.modelcontextprotocol.io
+- **Propósito**: Catálogo oficial de servidores MCP (centenas disponíveis)
+- **Instalação**: `hermes mcp add <server-name>` ou config no JSON do MCP
+
+### GitHub Copilot Plugin Marketplace
+- **CLI**: `copilot plugin marketplace add obra/superpowers-marketplace`
+- **Requer**: GitHub Copilot CLI (`npm install -g @githubnext/github-copilot-cli`)
+- **Nota**: CLI não instalado atualmente — instale com `winget install --id GitHub.CopilotCLI` ou `npm i -g @githubnext/github-copilot-cli`
+
+### VS Code Marketplace (Oficial)
+- **URL**: https://marketplace.visualstudio.com/vscode
+- **Acesso**: Direto pelo VS Code Insiders (padrão)
+- **55 extensões** instaladas atualmente
 
 ---
 
@@ -171,7 +335,20 @@ e:\Hermes agent\
 ├── AGENTS.md                          ← Regras inegociáveis
 ├── EXTENSIONS_INTEGRATION.md          ← Guia completo de produtividade
 ├── PROGRESS.md                        ← Estado atual do projeto
-├── .vscode/settings.json              ← Configurações do workspace
+├── .vscode/settings.json              ← Configurações otimizadas do workspace
+├── .agents/skills/                    ← 41 skills (skills.sh ecosystem)
+│   ├── test-driven-development/       ← Superpowers skill
+│   ├── systematic-debugging/          ← Superpowers skill
+│   ├── writing-plans/                 ← Superpowers skill
+│   ├── frontend-design/               ← Anthropic skill
+│   ├── mcp-builder/                   ← Anthropic skill
+│   ├── vercel-optimize/               ← Vercel skill
+    ├── hermes-agent/                  ← PROJETO: skill custom do Hermes
+    └── ...                            ← +36 outros skills
+├── skills/                            ← Skills baixados manualmente
+│   ├── superpowers/                   ← 6 skills (cópia local)
+│   ├── anthropic/                     ← 2 skills (cópia local)
+│   └── vibe-skills/                   ← 1 skill (cópia local)
 ├── src/                               ← Extension host
 │   ├── extension.ts
 │   ├── acp/                           ← ACP client/manager
