@@ -1,0 +1,13 @@
+const fs = require('fs');
+const c = fs.readFileSync('c:/Users/Usuario/AppData/Roaming/Code - Insiders/User/settings.json', 'utf8');
+let i = c.indexOf('OpenRouter');
+let s = c.indexOf('[', i);
+let e = c.indexOf(']', s);
+let section = c.substring(s, e + 1);
+console.log('Section length:', section.length);
+let names = section.match(/"name": "([^"]+)"/g);
+console.log('Names found:', names ? names.length : 0);
+let ids = section.match(/"id": "([^"]+)"/g);
+console.log('IDs found:', ids ? ids.length : 0);
+console.log('First 500 chars:', section.substring(0, 500));
+console.log('Last 500 chars:', section.substring(section.length - 500));

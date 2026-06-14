@@ -369,7 +369,53 @@ e:\Hermes agent\
 
 ---
 
+---
+
+## 🔴 PROTOCOLO DE TAREFAS LONGAS (>40s) — OBRIGATÓRIO
+
+**Se QUALQUER tarefa durar mais que 40 segundos, você DEVE imediatamente parar e postar no chat um status box chamativo neste formato:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║              🔶 TAREFA EM ANDAMENTO (>40s) 🔶              ║
+║                                                              ║
+║  🏗️  GENÉRICO:  <o que está fazendo em alto nível>        ║
+║  🔧  ESPECÍFICO: <a sub-tarefa exata agora>                 ║
+║  ⏳  STATUS:     <% ou descrição do progresso>              ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### Regras de execução:
+
+1. **Ao atingir 40s de uma operação**, interrompa e poste o status box
+2. **A cada 30s após isso**, atualize o chat com um novo status box refletindo o progresso
+3. **Ao finalizar**, poste um status box verde de conclusão:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║              ✅ TAREFA CONCLUÍDA 🎉                        ║
+║                                                              ║
+║  🏗️  GENÉRICO:  <mesmo de antes>                          ║
+║  🔧  ESPECÍFICO: <o que foi feito>                         ║
+║  ✅  STATUS:     CONCLUÍDO em <tempo total>                ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### Disparadores que ativam este protocolo:
+- `run_in_terminal` com timeout longo (>40s)
+- `runTests` com muitos arquivos
+- `runSubagent` para tarefas complexas
+- Múltiplas operações de arquivo em sequência
+- Builds, deploys, instalações de pacotes
+- Qualquer operação que você saiba de antemão que levará >40s
+
+> ⚡ **Isto é OBRIGATÓRIO.** Não opcional. Não pule.
+
+---
+
 > ⚡ **Auto-loaded pelo Copilot a cada sessão.** Mantenha este arquivo atualizado
 > com o estado mais recente do projeto para máxima produtividade.
 >
-> Última atualização: 2026-06-13
+> Última atualização: 2026-06-14
