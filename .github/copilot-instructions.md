@@ -21,15 +21,24 @@ Leia ESTES arquivos obrigatoriamente (nesta ordem):
 
 ### Passo 2: Validar Ambiente
 
-- Verifique se os TODOs estão visíveis (Todo Tree no painel lateral)
-- Verifique se o Vitest Explorer está ativo (painel de Testes)
-- Verifique se o Error Lens está marcando erros inline
-- Verifique se a extensão Hermes está instalada (`hermes-agent.vscode-hermes-agent`)
-- ✅ **Verifique os MCPs instalados**: `hermes mcp list` — devem aparecer 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
-- ✅ **Consulte a tabela de MCPs** na seção `🧩 MCP Servers Integrados` abaixo para saber quais tools estão disponíveis
+Cada ferramenta abaixo me dá contexto para tomar decisões melhores. Verifique **todas**:
+
+#### 🔍 Contexto de Código
+
+- **Todo Tree** → Abra o painel e leia os TODOs/FIXMEs/HACKs pendentes. Eles revelam bugs conhecidos, melhorias planejadas e dívida técnica. **Use como guia de prioridade.**
+- **Error Lens** → Erros e warnings inline. Escaneie arquivos abertos para entender problemas ativos.
+- **Vitest Explorer** → Painel de Testes. Verifique quantos testes existem, se passam, e quais áreas têm cobertura.
+
+#### 🔌 Extensões do Projeto
+
+- Extensão Hermes instalada (`hermes-agent.vscode-hermes-agent`)
+- Extensão No-Credit-Limit instalada (`hermes-agent.no-credit-limit`)
+- ✅ **MCPs**: `hermes mcp list` — 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
+- ✅ **Tabela de MCPs** abaixo para saber quais tools estão disponíveis
 
 ### Passo 3: Iniciar Trabalho
 
+- Consulte o **Todo Tree** novamente antes de cada tarefa — novos TODOs podem ter surgido
 - Siga as **REGRAS INEGOCIÁVEIS** do `AGENTS.md`
 - Use a **QA Checklist** da seção 6 do `EXTENSIONS_INTEGRATION.md`
 - Documente no `PROGRESS.md` qualquer mudança significativa
@@ -82,19 +91,22 @@ Hermes ACP (Python, hermes acp)
 - **Webview**: 6 abas (Chat/Setup/Cascade/Config/MCP/Tweaks)
 - **State**: `webview/src/state/store.ts` (Store class, não Zustand)
 - **Build**: `scripts/build.mjs` (esbuild host + vite webview)
-- **Test**: `vitest` (1 teste em `tests/hermesDetector.test.ts`)
+- **Test**: `vitest` (6 testes em 2 files: `tests/hermesDetector.test.ts`, `tests/hermesAgentProvider.test.ts`)
 
 ---
 
 ## 🔧 Comandos Rápidos
 
-| Comando                                     | Descrição          |
-| ------------------------------------------- | ------------------ |
-| `node scripts/build.mjs --mode production`  | Build completo     |
-| `npx vitest run`                            | Rodar testes       |
-| `npx tsc -p tsconfig.json --noEmit`         | Type check host    |
-| `npx tsc -p tsconfig.webview.json --noEmit` | Type check webview |
-| `npx eslint src webview/src --quiet`        | Lint               |
+| Comando                                     | Descrição             |
+| ------------------------------------------- | --------------------- |
+| `node scripts/build.mjs --mode production`  | Build completo        |
+| `npm test`                                  | Rodar todos os testes |
+| `npm run test:watch`                        | Testes em watch mode  |
+| `npm run test:coverage`                     | Testes com cobertura  |
+| `npm run test:ui`                           | UI mode interativa    |
+| `npx tsc -p tsconfig.json --noEmit`         | Type check host       |
+| `npx tsc -p tsconfig.webview.json --noEmit` | Type check webview    |
+| `npx eslint src webview/src --quiet`        | Lint                  |
 
 ---
 
@@ -122,32 +134,32 @@ Todas configuradas em `.vscode/settings.json`:
 
 Instalados via `hermes mcp add`. Ativados automaticamente em toda sessão do Hermes ACP.
 
-| Servidor | Tools | Função Principal |
-|----------|-------|-----------------|
-| **sequential-thinking** | `sequential_thinking` | Raciocínio estruturado passo-a-passo com revisões e ramificações |
-| **filesystem** | 13 tools: read, write, edit, search, tree, move, info | Acesso completo ao sistema de arquivos do workspace |
-| **github** | 22 tools: issues, PRs, commits, search, files | Integração total com GitHub API |
-| **memory** | 8 tools: create/delete/search entities, relations, graph | Grafo de conhecimento persistente entre sessões |
-| **puppeteer** | 7 tools: navigate, screenshot, click, fill, evaluate | Automação de navegador Chrome headless |
-| **fetch-url** | `fetch-url` | Fetch de páginas web → Markdown limpo |
+| Servidor                | Tools                                                    | Função Principal                                                 |
+| ----------------------- | -------------------------------------------------------- | ---------------------------------------------------------------- |
+| **sequential-thinking** | `sequential_thinking`                                    | Raciocínio estruturado passo-a-passo com revisões e ramificações |
+| **filesystem**          | 13 tools: read, write, edit, search, tree, move, info    | Acesso completo ao sistema de arquivos do workspace              |
+| **github**              | 22 tools: issues, PRs, commits, search, files            | Integração total com GitHub API                                  |
+| **memory**              | 8 tools: create/delete/search entities, relations, graph | Grafo de conhecimento persistente entre sessões                  |
+| **puppeteer**           | 7 tools: navigate, screenshot, click, fill, evaluate     | Automação de navegador Chrome headless                           |
+| **fetch-url**           | `fetch-url`                                              | Fetch de páginas web → Markdown limpo                            |
 
 > **Nota**: `filesystem` tem escopo restrito a `E:\Hermes agent`. `github` precisa de `GITHUB_TOKEN` no ambiente. `puppeteer` usa Chrome headless embutido.
 
 ### Quando usar cada MCP
 
-| Situação | MCP | Tool |
-|----------|-----|------|
-| Debugging de fluxo complexo | sequential-thinking | `sequential_thinking` |
-| Ler/escrever arquivos do projeto | filesystem | `read_text_file`, `write_file`, `edit_file` |
-| Navegar na árvore do projeto | filesystem | `directory_tree`, `list_directory` |
-| Buscar arquivos por padrão | filesystem | `search_files` |
-| Criar/gerenciar issues | github | `create_issue`, `list_issues`, `update_issue` |
-| Criar/mergear PRs | github | `create_pull_request`, `merge_pull_request` |
-| Buscar código em repositórios | github | `search_code`, `search_repositories` |
-| Salvar conhecimento entre sessões | memory | `create_entities`, `create_relations`, `search_nodes` |
-| Testar renderização do webview | puppeteer | `puppeteer_navigate`, `puppeteer_screenshot` |
-| Preencher formulários na UI | puppeteer | `puppeteer_fill`, `puppeteer_click` |
-| Buscar conteúdo de páginas web | fetch-url | `fetch-url` |
+| Situação                          | MCP                 | Tool                                                  |
+| --------------------------------- | ------------------- | ----------------------------------------------------- |
+| Debugging de fluxo complexo       | sequential-thinking | `sequential_thinking`                                 |
+| Ler/escrever arquivos do projeto  | filesystem          | `read_text_file`, `write_file`, `edit_file`           |
+| Navegar na árvore do projeto      | filesystem          | `directory_tree`, `list_directory`                    |
+| Buscar arquivos por padrão        | filesystem          | `search_files`                                        |
+| Criar/gerenciar issues            | github              | `create_issue`, `list_issues`, `update_issue`         |
+| Criar/mergear PRs                 | github              | `create_pull_request`, `merge_pull_request`           |
+| Buscar código em repositórios     | github              | `search_code`, `search_repositories`                  |
+| Salvar conhecimento entre sessões | memory              | `create_entities`, `create_relations`, `search_nodes` |
+| Testar renderização do webview    | puppeteer           | `puppeteer_navigate`, `puppeteer_screenshot`          |
+| Preencher formulários na UI       | puppeteer           | `puppeteer_fill`, `puppeteer_click`                   |
+| Buscar conteúdo de páginas web    | fetch-url           | `fetch-url`                                           |
 
 ---
 

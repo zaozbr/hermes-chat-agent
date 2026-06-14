@@ -29,11 +29,9 @@ export async function activate(context: vscode.ExtensionContext) {
   chatProvider = new ChatPanelProvider(context);
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      ChatPanelProvider.viewId,
-      chatProvider,
-      { webviewOptions: { retainContextWhenHidden: true } },
-    ),
+    vscode.window.registerWebviewViewProvider(ChatPanelProvider.viewId, chatProvider, {
+      webviewOptions: { retainContextWhenHidden: true },
+    }),
   );
 
   acpManager.on('update', (payload) => {

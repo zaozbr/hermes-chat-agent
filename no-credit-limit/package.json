@@ -1,0 +1,38 @@
+{
+  "name": "no-credit-limit",
+  "displayName": "No Credit Limit",
+  "description": "Silencia a notificação 'Credit Limit Reached' do GitHub Copilot Free sem desabilitar o Copilot. Monitora o arquivo do Copilot e reaplica o patch a cada atualização do VS Code.",
+  "version": "0.1.0",
+  "publisher": "hermes-agent",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Chat",
+    "Other"
+  ],
+  "keywords": [
+    "copilot",
+    "credit-limit",
+    "notification",
+    "silence",
+    "patch"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "noCreditLimit.patch",
+        "title": "No Credit Limit: Reaplicar patch no Copilot"
+      },
+      {
+        "command": "noCreditLimit.check",
+        "title": "No Credit Limit: Verificar status do patch"
+      }
+    ]
+  }
+}

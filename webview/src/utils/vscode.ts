@@ -17,7 +17,7 @@ let _api: VsCodeBridge | null = null;
 
 export function getVsCode(): VsCodeBridge {
   if (!_api) {
-    if (typeof window.acquireVsCodeApi === 'function') {
+    if (typeof window !== 'undefined' && typeof window.acquireVsCodeApi === 'function') {
       _api = window.acquireVsCodeApi();
     } else {
       // dev fallback (running in plain browser) — log to console

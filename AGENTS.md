@@ -19,16 +19,27 @@ Leia ESTES arquivos obrigatoriamente (nesta ordem):
 
 ### Passo 2: Validar Ambiente
 
-- Todo Tree indexando TODOs (painel lateral)
-- Vitest Explorer ativo (painel de Testes)
-- Error Lens marcando erros inline
-- Extensão `hermes-agent.vscode-hermes-agent` instalada
-- ✅ **Verificar MCPs**: `hermes mcp list` — 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
-- ✅ **Consultar tabela de MCPs** na seção `🧩 MCP Servers Integrados` abaixo
+Cada ferramenta abaixo me dá contexto para tomar decisões melhores. Verifique **todas**:
 
-### Passo 3: Usar QA Checklist
+#### 🔍 Contexto de Código
 
-Seguir checklist da seção 6 do `EXTENSIONS_INTEGRATION.md`.
+- **Todo Tree** → Abra o painel e leia os TODOs/FIXMEs/HACKs pendentes. Eles revelam bugs conhecidos, melhorias planejadas e dívida técnica. **Use como guia de prioridade.**
+- **Error Lens** → Erros e warnings inline. Escaneie arquivos abertos para entender problemas ativos.
+- **Vitest Explorer** → Painel de Testes. Verifique quantos testes existem, se passam, e quais áreas têm cobertura.
+
+#### 🔌 Extensões do Projeto
+
+- Extensão Hermes instalada (`hermes-agent.vscode-hermes-agent`)
+- Extensão No-Credit-Limit instalada (`hermes-agent.no-credit-limit`)
+- ✅ **MCPs**: `hermes mcp list` — 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
+- ✅ **Tabela de MCPs** abaixo para saber quais tools estão disponíveis
+
+### Passo 3: Iniciar Trabalho
+
+- Consulte o **Todo Tree** novamente antes de cada tarefa — novos TODOs podem ter surgido
+- Siga as **REGRAS INEGOCIÁVEIS** do `AGENTS.md`
+- Use a **QA Checklist** da seção 6 do `EXTENSIONS_INTEGRATION.md`
+- Documente no `PROGRESS.md` qualquer mudança significativa
 
 ---
 
@@ -98,13 +109,17 @@ npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix
 code --uninstall-extension hermes-agent.vscode-hermes-agent
 code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force
 
+# Testes
+npm test          # rodar todos
+npm run test:watch   # watch mode
+npm run test:coverage  # com cobertura
+npm run test:ui    # UI mode interativa
+npx vitest run tests/hermesDetector.test.ts  # teste específico
+
 # Lint + Type Check
 npx eslint src webview/src --quiet
 npx tsc -p tsconfig.json --noEmit
 npx tsc -p tsconfig.webview.json --noEmit
-
-# Testes
-npx vitest run
 ```
 
 ---

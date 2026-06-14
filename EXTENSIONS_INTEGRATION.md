@@ -68,26 +68,26 @@ AGENTS.md contém as REGRAS INEGOCIÁVEIS do projeto.
 
 #### Tier 1 — Críticas (instaladas e integradas)
 
-| Extensão                | ID                                      | Função                      | Integração no Projeto                                                                                                                             |
-| ----------------------- | --------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **TypeScript Next**     | `ms-vscode.vscode-typescript-next`      | Versão nightly do TS        | Usa `typescript.tsdk` do workspace. Ativado via `"typescript.nightly.enable": true` no settings.json. Permite testar features futuras do TS.      |
-| **Vitest Explorer**     | `vitest.explorer`                       | UI dedicada para testes     | Lê `vitest.config.ts` automaticamente. Mostra testes no painel "Testes" com run/debug. Configurado com `"vitest.rootPath": "${workspaceFolder}"`. |
-| **Jest Runner**         | `firsttris.vscode-jest-runner`          | Run/debug testes no code    | Configurado para usar Vitest: `"jestrunner.jestCommand": "npx vitest"`. Run inline no código via CodeLens ou atalho.                              |
-| **Todo Tree**           | `gruntfuggly.todo-tree`                 | Indexação de TODO/FIXME     | Customizado com tags: TODO, FIXME, HACK, BUG, NOTE, OPTIMIZE. Exclui node_modules/dist. Mostra badges e contagem na status bar.                   |
-| **Error Lens**          | `usernamehw.errorlens`                  | Erros inline no código      | Mostra erros/warnings ao lado da linha. Configurado para exibir sempre, inclusive no save.                                                        |
-| **Mermaid Chart**       | `mermaidchart.vscode-mermaid-chart`     | Visualização de diagramas   | Preview e export de diagramas Mermaid. Use após validar com o Mermaid Diagram Validator embutido.                                                 |
-| **Markdown Mermaid**    | `bierner.markdown-mermaid`              | Mermaid em preview Markdown | Renderiza blocos ```mermaid em arquivos .md. Ativado via `"markdown.preview.markdownMermaid": true`.                                              |
-| **Prettier**            | `esbenb.prettier-vscode`                | Formatador de código        | Default formatter. Config: single quote, trailing commas, printWidth 100, tab 2. Requer config na raiz.                                           |
-| **ESLint**              | `dbaeumer.vscode-eslint`                | Lint TypeScript             | Valida .ts e .tsx. Run on type. Integrado com o build (esbuild faz lint também).                                                                  |
-| **YAML**                | `redhat.vscode-yaml`                    | Schema validation YAML      | Valida `config.yaml` do Hermes contra schema. Autocomplete habilitado.                                                                            |
-| **Code Spell Checker**  | `streetsidesoftware.code-spell-checker` | Correção ortográfica        | Dicionário en+pt_BR. Palavras do projeto (ACP, MCP, Hermes, etc.) pré-adicionadas.                                                                |
-| **DotENV**              | `mikestead.dotenv`                      | Syntax highlight .env       | Mapeado para `.env*`, `.env.local`, `.env.production`.                                                                                            |
-| **GitLens**             | `eamodio.gitlens`                       | Git superpoderes            | CodeLens com blame, history inline, explorador de repositório.                                                                                    |
-| **Git Graph**           | `mhutchie.git-graph`                    | Visualização de branches    | Gráfico Git interativo.                                                                                                                           |
-| **Better Comments**     | `aaron-bond.better-comments`            | Comentários coloridos       | Categorias: ! (alert), ? (question), todo (laranja), \* (highlight), NOTE, OPTIMIZE.                                                              |
-| **npm Intellisense**    | `christian-kohler.npm-intellisense`     | Autocomplete de imports     | Scan de devDependencies. Aspas simples.                                                                                                           |
-| **Markdown All in One** | `yzhang.markdown-all-in-one`            | Edição Markdown             | TOC automático (níveis 2-4), auto-preview, atalhos.                                                                                               |
-| **markdownlint**        | `davidanson.vscode-markdownlint`        | Lint Markdown               | Garante consistência em docs .md.                                                                                                                 |
+| Extensão                | ID                                      | Função                      | Integração no Projeto                                                                                                                                                                                                        |
+| ----------------------- | --------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TypeScript Next**     | `ms-vscode.vscode-typescript-next`      | Versão nightly do TS        | Usa `typescript.tsdk` do workspace. Ativado via `"typescript.nightly.enable": true` no settings.json. Permite testar features futuras do TS.                                                                                 |
+| **Vitest Explorer**     | `vitest.explorer`                       | UI dedicada para testes     | Lê `vitest.config.ts` automaticamente. Mostra testes no painel "Testes" com run/debug. Configurado com `"vitest.rootPath": "${workspaceFolder}"`.                                                                            |
+| **Jest Runner**         | `firsttris.vscode-jest-runner`          | Run/debug testes no code    | Configurado para usar Vitest: `"jestrunner.jestCommand": "npx vitest"`. Run inline no código via CodeLens ou atalho.                                                                                                         |
+| **Todo Tree**           | `gruntfuggly.todo-tree`                 | Indexação de TODO/FIXME     | **Consultado pelo Copilot como contexto de prioridade**. Tags: TODO, FIXME, HACK, BUG, NOTE, OPTIMIZE. Exclui node_modules/dist. Mostra badges e contagem na status bar. **No startup**: abrir painel e ler TODOs pendentes. |
+| **Error Lens**          | `usernamehw.errorlens`                  | Erros inline no código      | Mostra erros/warnings ao lado da linha. Configurado para exibir sempre, inclusive no save.                                                                                                                                   |
+| **Mermaid Chart**       | `mermaidchart.vscode-mermaid-chart`     | Visualização de diagramas   | Preview e export de diagramas Mermaid. Use após validar com o Mermaid Diagram Validator embutido.                                                                                                                            |
+| **Markdown Mermaid**    | `bierner.markdown-mermaid`              | Mermaid em preview Markdown | Renderiza blocos ```mermaid em arquivos .md. Ativado via `"markdown.preview.markdownMermaid": true`.                                                                                                                         |
+| **Prettier**            | `esbenb.prettier-vscode`                | Formatador de código        | Default formatter. Config: single quote, trailing commas, printWidth 100, tab 2. Requer config na raiz.                                                                                                                      |
+| **ESLint**              | `dbaeumer.vscode-eslint`                | Lint TypeScript             | Valida .ts e .tsx. Run on type. Integrado com o build (esbuild faz lint também).                                                                                                                                             |
+| **YAML**                | `redhat.vscode-yaml`                    | Schema validation YAML      | Valida `config.yaml` do Hermes contra schema. Autocomplete habilitado.                                                                                                                                                       |
+| **Code Spell Checker**  | `streetsidesoftware.code-spell-checker` | Correção ortográfica        | Dicionário en+pt_BR. Palavras do projeto (ACP, MCP, Hermes, etc.) pré-adicionadas.                                                                                                                                           |
+| **DotENV**              | `mikestead.dotenv`                      | Syntax highlight .env       | Mapeado para `.env*`, `.env.local`, `.env.production`.                                                                                                                                                                       |
+| **GitLens**             | `eamodio.gitlens`                       | Git superpoderes            | CodeLens com blame, history inline, explorador de repositório.                                                                                                                                                               |
+| **Git Graph**           | `mhutchie.git-graph`                    | Visualização de branches    | Gráfico Git interativo.                                                                                                                                                                                                      |
+| **Better Comments**     | `aaron-bond.better-comments`            | Comentários coloridos       | Categorias: ! (alert), ? (question), todo (laranja), \* (highlight), NOTE, OPTIMIZE.                                                                                                                                         |
+| **npm Intellisense**    | `christian-kohler.npm-intellisense`     | Autocomplete de imports     | Scan de devDependencies. Aspas simples.                                                                                                                                                                                      |
+| **Markdown All in One** | `yzhang.markdown-all-in-one`            | Edição Markdown             | TOC automático (níveis 2-4), auto-preview, atalhos.                                                                                                                                                                          |
+| **markdownlint**        | `davidanson.vscode-markdownlint`        | Lint Markdown               | Garante consistência em docs .md.                                                                                                                                                                                            |
 
 ### 2.2 Extensões de Apoio
 
@@ -239,25 +239,47 @@ npx tsc -p tsconfig.webview.json --noEmit
 npx eslint src webview/src --quiet
 ```
 
-### 4.3 Testes
+### 4.3 Testes (Vitest)
 
 ```powershell
-# Rodar todos os testes (Vitest)
-npx vitest run
+# Rodar todos os testes (uma vez)
+npm test
+
+# Watch mode (re-run automático ao salvar)
+npm run test:watch
+
+# Com coverage
+npm run test:coverage
+
+# UI mode interativa (navegador)
+npm run test:ui
 
 # Rodar teste específico
 npx vitest run tests/hermesDetector.test.ts
 
-# Watch mode
-npx vitest
-
-# Pelo Vitest Explorer: abrir painel "Testes" (icônica de frasco)
-# Pelo Jest Runner: clicar no CodeLens "Run" acima do test()
+# Pelo Vitest Explorer:
+#   Abrir painel "Testes" (icone de frasco na barra lateral)
+#   Ver arvore de testes, rodar individuais ou em grupo
+# Pelo Jest Runner:
+#   Clicar no CodeLens "Run" / "Debug" acima do test()/describe()
 ```
 
-**Testes existentes**:
+**Estrategia de testes — boas praticas:**
 
-- `tests/hermesDetector.test.ts` — 1 teste de exemplo ✅
+| Tatica              | Descricao                                                                   |
+| ------------------- | --------------------------------------------------------------------------- |
+| **Service classes** | Testar hermesDetector, hermesInstaller, processRunner com mocks de `vscode` |
+| **Store**           | Testar estado, metodos get/set, notificacoes de subscribers                 |
+| **Utils**           | Testar logger, markdown, validacao de config                                |
+| **ACP manager**     | Testar conexao, reconexao, envio/recebimento de mensagens JSON-RPC          |
+| **Nao testar**      | UI components do webview (React, requerem jsdom)                            |
+
+**Testes existentes (2 files, 6 tests):**
+
+| Arquivo                             | Tests | O que cobre                                        |
+| ----------------------------------- | ----- | -------------------------------------------------- |
+| `tests/hermesDetector.test.ts`      | 1     | CLI smoke test (`hermes --version`)                |
+| `tests/hermesAgentProvider.test.ts` | 5     | Provider init, Store (state, get/set, subscribers) |
 
 ### 4.4 QA Antes de Entregar (REGRA #2)
 
@@ -292,19 +314,22 @@ code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --forc
 
 ### Terminal
 
-| Comando                                                                             | Descrição                       |
-| ----------------------------------------------------------------------------------- | ------------------------------- |
-| `node scripts/build.mjs --mode production`                                          | Build completo (host + webview) |
-| `node scripts/build.mjs --mode development`                                         | Build dev sem minify            |
-| `node scripts/build.mjs --watch`                                                    | Watch mode (host + webview)     |
-| `npx vitest run`                                                                    | Rodar todos os testes           |
-| `npx vitest run tests/hermesDetector.test.ts`                                       | Rodar teste específico          |
-| `npx tsc -p tsconfig.json --noEmit`                                                 | Type check host                 |
-| `npx tsc -p tsconfig.webview.json --noEmit`                                         | Type check webview              |
-| `npx eslint src webview/src --quiet`                                                | Lint                            |
-| `npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix`     | Empacotar .vsix                 |
-| `code --uninstall-extension hermes-agent.vscode-hermes-agent`                       | Desinstalar extensão            |
-| `code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force` | Instalar extensão               |
+| Comando                                                                             | Descrição                         |
+| ----------------------------------------------------------------------------------- | --------------------------------- |
+| `node scripts/build.mjs --mode production`                                          | Build completo (host + webview)   |
+| `node scripts/build.mjs --mode development`                                         | Build dev sem minify              |
+| `node scripts/build.mjs --watch`                                                    | Watch mode (host + webview)       |
+| `npm test`                                                                          | Rodar todos os testes             |
+| `npm run test:watch`                                                                | Watch mode (re-run automático)    |
+| `npm run test:coverage`                                                             | Testes com relatório de cobertura |
+| `npm run test:ui`                                                                   | UI mode interativa (navegador)    |
+| `npx vitest run tests/hermesDetector.test.ts`                                       | Rodar teste específico            |
+| `npx tsc -p tsconfig.json --noEmit`                                                 | Type check host                   |
+| `npx tsc -p tsconfig.webview.json --noEmit`                                         | Type check webview                |
+| `npx eslint src webview/src --quiet`                                                | Lint                              |
+| `npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix`     | Empacotar .vsix                   |
+| `code --uninstall-extension hermes-agent.vscode-hermes-agent`                       | Desinstalar extensão              |
+| `code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force` | Instalar extensão                 |
 
 ### VS Code Comandos (Ctrl+Shift+P)
 
@@ -428,3 +453,42 @@ Hermes (já cobertas por outras ou não aplicáveis):
 > **Última atualização**: 2026-06-13
 > **Versão do projeto**: v0.1.0
 > **Workspace**: `E:\Hermes agent`
+
+### 2.4 Como o Copilot/IA usa estas extensões como contexto
+
+Toda vez que eu (o Copilot/IA) inicio uma sessão, eu verifico estes painéis para entender o estado atual do projeto antes de responder ou agir:
+
+#### 🎯 Contexto de Prioridade — Todo Tree
+
+- **O quê**: Leio todos os TODOs/FIXMEs/HACKs/BUGs do projeto
+- **Por quê**: Eles revelam bugs conhecidos, melhorias planejadas e dívida técnica
+- **Como uso**: Guia de prioridade — o que tem "FIXME" urgente vem antes de "TODO" planejado
+- **Quando**: No startup (Passo 2) e antes de cada tarefa (Passo 3)
+
+#### ❌ Contexto de Erros — Error Lens
+
+- **O quê**: Escaneio erros e warnings inline em arquivos abertos
+- **Por quê**: Problemas ativos precisam ser resolvidos antes de nova funcionalidade
+- **Como uso**: Se um arquivo tem erro, priorizo correção antes de adicionar código
+- **Quando**: Durante edição de qualquer arquivo
+
+#### 🧪 Contexto de Qualidade — Vitest Explorer
+
+- **O quê**: Verifico quantos testes existem, se passam, e áreas cobertas
+- **Por quê**: Garantir que mudanças não quebrem testes existentes
+- **Como uso**: Antes de editar, verifico testes da área. Depois de editar, confirmo que continuam passando.
+- **Quando**: Antes e depois de qualquer alteração no código
+
+#### 🔌 Contexto de Infraestrutura — MCP + Extensões
+
+- **O quê**: Verifico se Hermes ACP está rodando e MCPs estão ativos
+- **Por quê**: Ferramentas offline levam a respostas incompletas
+- **Como uso**: Se um MCP está offline, aviso o usuário antes de tentar usá-lo
+- **Quando**: Startup (Passo 2) e antes de operações que dependem de MCP específico
+
+#### 📋 Regras do Projeto — AGENTS.md + copilot-instructions.md
+
+- **O quê**: Reabsorvo as regras a cada prompt
+- **Por quê**: REGRA #3 manda — cada prompt DEVE reabsorver as regras
+- **Como uso**: Guia de comportamento — REGRA #1 (deploy), REGRA #2 (QA), etc.
+- **Quando**: A cada início de prompt

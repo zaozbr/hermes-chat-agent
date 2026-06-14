@@ -1,4 +1,5 @@
 # WORKFLOW RESTORE - Estado Atual do Projeto Hermes Agent
+
 **Data:** 2026-06-13
 **Sessão:** Teste de modelos [FREE] do Unify Chat Provider
 
@@ -13,39 +14,42 @@ Testei **34 modelos [FREE]** configurados no Unify Chat Provider (backup `.backu
 ## ✅ MODELOS FUNCIONANDO (Direto via API)
 
 ### **OpenRouter** (key: `sk-or-v1-***`)
-| Modelo | Provider | Status |
-|--------|----------|--------|
-| `google/gemma-4-31b-it:free` | OpenInference | ✅ 200 OK |
-| `nvidia/nemotron-3-ultra-550b-a55b:free` | Nvidia | ✅ 200 OK |
-| `nvidia/nemotron-3-super-120b-a12b:free` | Nvidia | ✅ 200 OK |
-| `nvidia/nemotron-3-nano-30b-a3b:free` | Nvidia | ✅ 200 OK |
-| `nvidia/nemotron-nano-9b-v2:free` | Nvidia | ✅ 200 OK |
-| `openrouter/owl-alpha` | Stealth | ✅ 200 OK |
+
+| Modelo                                   | Provider      | Status    |
+| ---------------------------------------- | ------------- | --------- |
+| `google/gemma-4-31b-it:free`             | OpenInference | ✅ 200 OK |
+| `nvidia/nemotron-3-ultra-550b-a55b:free` | Nvidia        | ✅ 200 OK |
+| `nvidia/nemotron-3-super-120b-a12b:free` | Nvidia        | ✅ 200 OK |
+| `nvidia/nemotron-3-nano-30b-a3b:free`    | Nvidia        | ✅ 200 OK |
+| `nvidia/nemotron-nano-9b-v2:free`        | Nvidia        | ✅ 200 OK |
+| `openrouter/owl-alpha`                   | Stealth       | ✅ 200 OK |
 
 ### **NVIDIA API Direta** (key: `nvapi-***`)
-| Modelo | Status |
-|--------|--------|
+
+| Modelo                              | Status    |
+| ----------------------------------- | --------- |
 | `nvidia/nemotron-3-ultra-550b-a55b` | ✅ 200 OK |
 | `nvidia/nemotron-3-super-120b-a12b` | ✅ 200 OK |
-| `nvidia/nemotron-3-nano-30b-a3b` | ✅ 200 OK |
-| `nvidia/nemotron-nano-12b-v2-vl` | ✅ 200 OK |
+| `nvidia/nemotron-3-nano-30b-a3b`    | ✅ 200 OK |
+| `nvidia/nemotron-nano-12b-v2-vl`    | ✅ 200 OK |
 
 ### **Synthetic** (key: `syn_***` - formato `hf:owner/model`)
-| Modelo | Status |
-|--------|--------|
-| `hf:zai-org/GLM-5.1` | ✅ 200 OK |
+
+| Modelo                   | Status    |
+| ------------------------ | --------- |
+| `hf:zai-org/GLM-5.1`     | ✅ 200 OK |
 | `hf:openai/gpt-oss-120b` | ✅ 200 OK |
 
 ---
 
 ## ❌ PROBLEMAS IDENTIFICADOS
 
-| Provider | Modelos | Problema | Solução |
-|----------|---------|----------|---------|
-| **OpenRouter (Venice)** | 18 modelos | **Rate Limited 429** (retry 4-28s) | Usar key própria com rate limits acumulados |
-| **OpenCode Zen** | 8 modelos | **404 - Sem API pública** | Só funciona via OpenCode CLI, não API |
-| **DeepSeek API** | 1 modelo | **401 Key inválida** | key expirada/inválida |
-| **Synthetic (Together AI)** | 12 modelos | **404 Removidos do proxy** | Muitos modelos não mais suportados |
+| Provider                    | Modelos    | Problema                           | Solução                                     |
+| --------------------------- | ---------- | ---------------------------------- | ------------------------------------------- |
+| **OpenRouter (Venice)**     | 18 modelos | **Rate Limited 429** (retry 4-28s) | Usar key própria com rate limits acumulados |
+| **OpenCode Zen**            | 8 modelos  | **404 - Sem API pública**          | Só funciona via OpenCode CLI, não API       |
+| **DeepSeek API**            | 1 modelo   | **401 Key inválida**               | key expirada/inválida                       |
+| **Synthetic (Together AI)** | 12 modelos | **404 Removidos do proxy**         | Muitos modelos não mais suportados          |
 
 ---
 
