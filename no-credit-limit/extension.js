@@ -43,7 +43,16 @@ function getCopilotBundlePath() {
   const entries = fs.readdirSync(versionedRoot, { withFileTypes: true });
   for (const entry of entries) {
     if (entry.isDirectory() && /^[a-f0-9]{10}$/.test(entry.name)) {
-      const candidate = path.join(versionedRoot, entry.name, 'resources', 'app', 'extensions', 'copilot', 'dist', 'extension.js');
+      const candidate = path.join(
+        versionedRoot,
+        entry.name,
+        'resources',
+        'app',
+        'extensions',
+        'copilot',
+        'dist',
+        'extension.js',
+      );
       if (fs.existsSync(candidate)) {
         return candidate;
       }
@@ -95,7 +104,7 @@ function applyPatch(filePath) {
   if (!content.includes(OLD_QUOTA)) {
     throw new Error(
       'Could not find quotaExhausted getter. Bundle may have changed. ' +
-      'Expected pattern not found.'
+        'Expected pattern not found.',
     );
   }
   content = content.replace(OLD_QUOTA, 'get quotaExhausted(){return!1}');

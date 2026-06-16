@@ -1,0 +1,1 @@
+powershell -Command "Start-Process powershell -Verb RunAs -ArgumentList '-Command', \"& { node 'E:/Hermes agent/apply-patches-manual.js' }\""

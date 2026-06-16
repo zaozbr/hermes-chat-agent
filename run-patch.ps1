@@ -1,0 +1,1 @@
+node 'E:/Hermes agent/apply-patches-manual.js'

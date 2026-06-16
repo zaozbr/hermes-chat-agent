@@ -1,0 +1,1 @@
+powershell -Command "Start-Process powershell -Verb RunAs -ArgumentList '-Command', \"Copy-Item 'C:\Program Files\Microsoft VS Code\6928394f91\resources\app\extensions\copilot\dist\extension.js' 'C:\Program Files\Microsoft VS Code\6928394f91\resources\app\extensions\copilot\dist\extension.js.backup' -Force\""

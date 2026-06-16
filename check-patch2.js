@@ -1,0 +1,11 @@
+const fs = require('fs');
+const content = fs.readFileSync('C:\\Program Files\\Microsoft VS Code\\6928394f91\\resources\\app\\extensions\\copilot\\dist\\extension.js', 'utf-8');
+console.log('File size:', content.length);
+console.log('Has W6e:', content.includes('function W6e'));
+const w6ePatched = content.includes('function W6e(n,e,t){return""}');
+console.log('W6e patched:', w6ePatched);
+console.log('Has aDi:', content.includes('function aDi'));
+const aDiPatched = content.includes('function aDi(n,e,t,r){return""}');
+console.log('aDi patched:', aDiPatched);
+const getterPatched = content.includes('get isChatQuotaExceeded(){return!1}');
+console.log('isChatQuotaExceeded patched:', getterPatched);
