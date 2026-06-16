@@ -2,44 +2,72 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 
-// ─── Patch targets ──────────────────────────────────────────────
-// These are the exact minified patterns we patch in the Copilot bundle.
-// The function P6e generates all "credit limit" / "quota exceeded" messages.
-// We replace it with a no-op that returns empty string, suppressing the notification.
-
-const PATCHES = [
-  {
-    // Full replacement of P6e function - handles "credit limit" family
-    search: /function P6e\(n,e,t\)\{return""\}/,
-    replace: 'function P6e(n,e,t){return""}',
-    fallbackSearch: /function P6e\(n,e,t\)\{/,
-    description: 'P6e credit limit messages',
-  },
-];
+// ─── Patch strategy ────────────────────────────────────────────
+//
+// PROBLEM: "Credit Limit Reached" popup appears when Copilot detects
+//   quota exhaustion. Previous attempts to patch error-handler functions
+//   (aDi, W6e, N6e, BDi) BROKE the chat because those functions are
+//   central to all error handling.
+//
+// SOLUTION: Patch ONLY the `quotaExhausted` getter — the master flag
+//   that controls whether credit-limit popups appear. This is a ONE-LINE
+//   boolean flip: instead of the complex logic checking percentRemaining,
+//   we simply make it always return `false`.
+//
+// Original:  get quotaExhausted(){return!this._quotaInfo||...percentRemaining<=0}
+// Patched:   get quotaExhausted(){return!1}
+//
+// CSS-equivalent: This is the JS equivalent of "height:0; opacity:0" —
+//   we prevent the popup from ever rendering instead of hiding it after
+//   the fact. No function bodies replaced, no brace counting, no risk
+//   of breaking the chat.
 
 // ─── Helpers ────────────────────────────────────────────────────
 
 /**
- * Find the Copilot extension dist file path using vscode.env.appRoot.
+ * Find the Copilot extension dist file path.
+ * VS Code now uses a versioned path: ...\<hash>\resources\app\extensions\copilot\dist\extension.js
  */
 function getCopilotBundlePath() {
   const appRoot = vscode.env.appRoot;
   if (!appRoot) {
     throw new Error('Could not determine VS Code installation path (appRoot is empty)');
   }
-  return path.join(appRoot, 'extensions', 'copilot', 'dist', 'extension.js');
+  // Try the standard path first
+  let bundlePath = path.join(appRoot, 'extensions', 'copilot', 'dist', 'extension.js');
+  if (fs.existsSync(bundlePath)) {
+    return bundlePath;
+  }
+  // Try the versioned path (VS Code 1.123+)
+  const versionedRoot = path.join(path.dirname(appRoot), '..');
+  const entries = fs.readdirSync(versionedRoot, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.isDirectory() && /^[a-f0-9]{10}$/.test(entry.name)) {
+      const candidate = path.join(versionedRoot, entry.name, 'resources', 'app', 'extensions', 'copilot', 'dist', 'extension.js');
+      if (fs.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+  }
+  // Fallback to standard path
+  return bundlePath;
 }
 
 /**
- * Check if the P6e function has already been patched (returns "").
+ * Check if the quotaExhausted patch has already been applied.
  */
 function isAlreadyPatched(content) {
-  return content.includes('function P6e(n,e,t){return""}');
+  // Patched version: simplified getter that always returns false
+  return (
+    content.includes('get quotaExhausted(){return!1}') &&
+    !content.includes('get quotaExhausted(){return!this._quotaInfo')
+  );
 }
 
 /**
- * Apply the patch to the Copilot bundle file.
- * Returns true if patched, false if already patched.
+ * Apply the quotaExhausted patch to the Copilot bundle file.
+ * Uses pure string replacement — NO brace-counting, NO regex on function bodies.
+ * Returns true if patch was applied, false if already patched.
  * Throws on error.
  */
 function applyPatch(filePath) {
@@ -54,53 +82,26 @@ function applyPatch(filePath) {
     return false; // already patched
   }
 
-  // Find the P6e function and replace everything from "function P6e(" to the next "function "
-  const match = content.match(/function P6e\([^)]+\)\{/);
-  if (!match) {
+  // ─── Patch quotaExhausted getter (force false) ─────────────
+  // This is the master flag that controls whether credit-limit popups appear.
+  // Original:
+  //   get quotaExhausted(){return!this._quotaInfo||this._quotaInfo.additionalUsageEnabled?!1:this._quotaInfo.unlimited?!this._quotaInfo.hasQuota:this._quotaInfo.percentRemaining<=0}
+  // Patched:
+  //   get quotaExhausted(){return!1}
+
+  const OLD_QUOTA =
+    'get quotaExhausted(){return!this._quotaInfo||this._quotaInfo.additionalUsageEnabled?!1:this._quotaInfo.unlimited?!this._quotaInfo.hasQuota:this._quotaInfo.percentRemaining<=0}';
+
+  if (!content.includes(OLD_QUOTA)) {
     throw new Error(
-      'Could not find P6e function in Copilot bundle. The bundle format may have changed.',
+      'Could not find quotaExhausted getter. Bundle may have changed. ' +
+      'Expected pattern not found.'
     );
   }
+  content = content.replace(OLD_QUOTA, 'get quotaExhausted(){return!1}');
 
-  // Find the start of P6e function
-  const funcStart = match.index;
-  if (funcStart === undefined) {
-    throw new Error('Could not locate P6e function position.');
-  }
-
-  // Find where the function ends - look for "}}function" or "}," followed by "function"
-  // P6e is a standalone function: `}function P6e(...){...body...}}function NextFunc`
-  // We need to find the matching } that closes the function body, then the } that closes...
-  // Actually, in the minified bundle, the structure is:
-  // `}function P6e(n,e,t){...code...}}function BDi`
-  // The }} closes: 1) the switch/default, 2) the function body
-
-  // Find the next "function" keyword after the P6e function definition
-  const contentAfter = content.slice(funcStart);
-  const nextFuncMatch = contentAfter.match(/function [A-Z]/);
-  if (!nextFuncMatch || nextFuncMatch.index === undefined) {
-    throw new Error('Could not find the end of P6e function.');
-  }
-
-  // The P6e function ends right before the next function starts
-  const funcEnd = funcStart + nextFuncMatch.index;
-
-  // Extract the original function text
-  const originalFunc = content.slice(funcStart, funcEnd);
-
-  // Replace: keep everything before funcStart and after funcEnd
-  const newContent =
-    content.slice(0, funcStart) + `function P6e(n,e,t){return""}` + content.slice(funcEnd);
-
-  // Verify the replacement doesn't break JSON or syntax (basic sanity check)
-  if (newContent.includes('function P6e(n,e,t){return""}function BDi')) {
-    fs.writeFileSync(filePath, newContent, 'utf-8');
-    return true;
-  }
-
-  // If the expected pattern isn't found, try more careful approach
-  // The pattern might have a newline or other character between the functions
-  fs.writeFileSync(filePath, newContent, 'utf-8');
+  // Write the patched file
+  fs.writeFileSync(filePath, content, 'utf-8');
   return true;
 }
 
@@ -110,10 +111,12 @@ function applyPatch(filePath) {
 function verifyPatch(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
+    const patched = isAlreadyPatched(content);
     return {
-      patched: isAlreadyPatched(content),
+      patched,
       fileExists: true,
       fileSize: content.length,
+      quotaExhaustedSimplified: patched,
     };
   } catch {
     return { patched: false, fileExists: false, fileSize: 0 };
@@ -162,7 +165,7 @@ async function runPatch() {
     if (result.patched) {
       console.log('[NoCreditLimit] Patch already applied.');
       statusBarItem.text = '$(check) No Credit Limit';
-      statusBarItem.tooltip = 'Patch applied. Copilot credit notifications silenced.';
+      statusBarItem.tooltip = 'quotaExhausted=false. Credit limit popup suppressed.';
       statusBarItem.backgroundColor = undefined;
       statusBarItem.show();
       return;
@@ -176,18 +179,18 @@ async function runPatch() {
     if (patched) {
       console.log('[NoCreditLimit] Patch applied successfully!');
       statusBarItem.text = '$(check) No Credit Limit';
-      statusBarItem.tooltip = 'Patch applied. Copilot credit notifications silenced.';
+      statusBarItem.tooltip = 'quotaExhausted=false. Credit limit popup suppressed.';
       statusBarItem.backgroundColor = undefined;
       statusBarItem.show();
 
       vscode.window.showInformationMessage(
-        'No Credit Limit: Patch applied successfully. Copilot credit notifications silenced.',
+        'No Credit Limit: quotaExhausted=false. Credit limit popup suppressed.',
         'OK',
       );
     } else {
       console.log('[NoCreditLimit] Already patched.');
       statusBarItem.text = '$(check) No Credit Limit';
-      statusBarItem.tooltip = 'Patch already applied.';
+      statusBarItem.tooltip = 'Patches already applied.';
       statusBarItem.show();
     }
   } catch (err) {
@@ -206,7 +209,7 @@ async function checkStatus() {
 
     if (result.patched) {
       vscode.window.showInformationMessage(
-        '✅ No Credit Limit: Patch aplicado. Notificações de crédito silenciadas.',
+        '✅ No Credit Limit: quotaExhausted=false. Popup de crédito suprimido.',
         'OK',
       );
     } else if (!result.fileExists) {
@@ -219,7 +222,7 @@ async function checkStatus() {
       }
     } else {
       const action = await vscode.window.showWarningMessage(
-        '⚠️ No Credit Limit: Patch NÃO aplicado. As notificações de crédito podem aparecer.',
+        '⚠️ No Credit Limit: Patch NÃO aplicado. Popup de crédito pode aparecer.',
         'Aplicar patch',
       );
       if (action === 'Aplicar patch') {
