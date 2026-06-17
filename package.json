@@ -147,6 +147,17 @@
         "command": "hermes-agent.installBrowser",
         "title": "Install Browser Tool (Chromium)",
         "category": "Hermes"
+      },
+      {
+        "command": "hermes-agent.configureApiKey",
+        "title": "Configure API Key…",
+        "category": "Hermes",
+        "icon": "$(key)"
+      },
+      {
+        "command": "hermes-agent.syncHermesEnv",
+        "title": "Sync API Keys to Hermes .env",
+        "category": "Hermes"
       }
     ],
     "keybindings": [
@@ -278,12 +289,17 @@
     "build:webview:dev": "vite build --config vite.config.ts --mode development --watch",
     "package": "node scripts/package.mjs",
     "lint": "eslint src webview/src",
+    "lint:report": "eslint src webview/src --output-file eslint-report.json --format json",
     "format": "prettier --write .",
+    "format:check": "prettier --check \"src/**/*.ts\" \"webview/src/**/*.{ts,tsx}\" \"tests/**/*.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.webview.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "security": "npm audit --audit-level=moderate",
+    "fullcheck": "npm run typecheck && npm run lint:report && npm run test:coverage && npm run security && npm run build",
+    "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run security && npm run build"
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "^0.25.0",

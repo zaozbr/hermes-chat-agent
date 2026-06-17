@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 
+const CI = process.env.CI === 'true';
+
 export default defineConfig({
   test: {
     // ─── Core ────────────────────────────────────────────
@@ -21,18 +23,26 @@ export default defineConfig({
     restoreMocks: true,
     mockReset: true,
 
-    // ─── Coverage ────────────────────────────────────────
+    // ─── Coverage (80% min em CI) ─────────────────────────
     coverage: {
-      enabled: false,
-      reporter: ['text', 'text-summary', 'html'],
+      enabled: CI,
+      reporter: ['text', 'text-summary', 'html', 'json-summary'],
       reportsDirectory: './coverage',
       include: ['src/**'],
-      exclude: ['node_modules/', 'dist/', 'dist-webview/', 'tests/', '**/*.d.ts'],
+      exclude: [
+        'node_modules/',
+        'dist/',
+        'dist-webview/',
+        'tests/',
+        '**/*.d.ts',
+        '**/*.test.*',
+        '**/*.spec.*',
+      ],
       thresholds: {
-        statements: 0,
-        branches: 0,
-        functions: 0,
-        lines: 0,
+        statements: CI ? 80 : 0,
+        branches: CI ? 70 : 0,
+        functions: CI ? 75 : 0,
+        lines: CI ? 80 : 0,
       },
     },
 
@@ -43,9 +53,7 @@ export default defineConfig({
     },
 
     // ─── Output ──────────────────────────────────────────
-    reporters: ['default', 'verbose'],
-    outputFile: {
-      junit: resolve(__dirname, 'coverage/junit-report.xml'),
-    },
+    reporters: CI ? ['default', 'junit'] : ['default', 'verbose'],
+    outputFile: CI ? { junit: resolve(__dirname, 'coverage/junit-report.xml') } : undefined,
   },
 });

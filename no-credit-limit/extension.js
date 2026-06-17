@@ -106,9 +106,7 @@ function isAlreadyPatched(content) {
  */
 function isWorkbenchPatched(content) {
   // PATCH D: xWe._render() → suppress quota notifications
-  const patchD =
-    content.includes('xWe=class extends k') &&
-    content.includes('.match(/quota/i)');
+  const patchD = content.includes('xWe=class extends k') && content.includes('.match(/quota/i)');
   return patchD;
 }
 
@@ -248,13 +246,17 @@ function applyWorkbenchPatch(filePath) {
   if (content.includes(PATCH_D_ORIG)) {
     content = content.replace(PATCH_D_ORIG, PATCH_D_DONE);
     fs.writeFileSync(filePath, content, 'utf-8');
-    console.log('[NoCreditLimit] PATCH D applied: xWe._render() checks notification text for quota');
+    console.log(
+      '[NoCreditLimit] PATCH D applied: xWe._render() checks notification text for quota',
+    );
     return true;
   } else if (content.includes('.match(/quota/i)')) {
     console.log('[NoCreditLimit] PATCH D already applied (skipping)');
     return false;
   } else {
-    console.warn('[NoCreditLimit] PATCH D (xWe._render): original pattern not found in workbench core');
+    console.warn(
+      '[NoCreditLimit] PATCH D (xWe._render): original pattern not found in workbench core',
+    );
     // Try a longer search to find the exact variant
     const xWeIdx = content.indexOf('xWe=class extends k');
     if (xWeIdx !== -1) {
@@ -265,7 +267,9 @@ function applyWorkbenchPatch(filePath) {
         const renderEnd = snippet.indexOf('rerender', renderIdx);
         if (renderEnd !== -1) {
           const actualRender = content.substring(renderStart, xWeIdx + renderEnd);
-          console.warn(`[NoCreditLimit] Found _render() variant at offset ${renderStart}: ${actualRender.substring(0, 200)}...`);
+          console.warn(
+            `[NoCreditLimit] Found _render() variant at offset ${renderStart}: ${actualRender.substring(0, 200)}...`,
+          );
         }
       }
     }

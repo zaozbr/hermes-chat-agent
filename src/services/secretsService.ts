@@ -41,6 +41,7 @@ class SecretsService {
     const env: Record<string, string> = {};
     // Known providers and their env var names
     const providers = [
+      { id: 'opencode', envVar: 'OPENCODE_ZEN_API_KEY' },
       { id: 'nvidia', envVar: 'NVIDIA_API_KEY' },
       { id: 'openrouter', envVar: 'OPENROUTER_API_KEY' },
       { id: 'openai', envVar: 'OPENAI_API_KEY' },

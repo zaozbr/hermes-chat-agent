@@ -24,7 +24,7 @@ export interface ProviderCatalog {
   id: string;
   label: string;
   envVars: string[]; // which env vars in .env gate this provider
-  baseUrl: string;   // hermes model.base_url value for this provider
+  baseUrl: string; // hermes model.base_url value for this provider
   models: CatalogEntry[];
 }
 
@@ -71,7 +71,13 @@ export const CATALOG: ProviderCatalog[] = [
     envVars: ['OPENAI_API_KEY'],
     baseUrl: 'https://api.openai.com/v1',
     models: [
-      { id: 'gpt-4o-mini', label: 'GPT-4o mini', ctx: '128k', free: false, notes: 'Cheapest paid OpenAI model.' },
+      {
+        id: 'gpt-4o-mini',
+        label: 'GPT-4o mini',
+        ctx: '128k',
+        free: false,
+        notes: 'Cheapest paid OpenAI model.',
+      },
       { id: 'gpt-4o', label: 'GPT-4o', ctx: '128k', free: false },
       { id: 'gpt-4.1-mini', label: 'GPT-4.1 mini', ctx: '1M', free: false },
     ],
@@ -82,7 +88,13 @@ export const CATALOG: ProviderCatalog[] = [
     envVars: ['ANTHROPIC_API_KEY'],
     baseUrl: 'https://api.anthropic.com/v1',
     models: [
-      { id: 'claude-3-5-haiku-latest', label: 'Claude 3.5 Haiku', ctx: '200k', free: false, notes: 'Cheapest Anthropic.' },
+      {
+        id: 'claude-3-5-haiku-latest',
+        label: 'Claude 3.5 Haiku',
+        ctx: '200k',
+        free: false,
+        notes: 'Cheapest Anthropic.',
+      },
       { id: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5', ctx: '200k', free: false },
     ],
   },
@@ -195,12 +207,60 @@ export const CATALOG: ProviderCatalog[] = [
     ],
   },
   {
+    id: 'opencode',
+    label: 'OpenCode Zen',
+    envVars: ['OPENCODE_ZEN_API_KEY'],
+    baseUrl: 'https://opencode.ai/zen/v1',
+    models: [
+      {
+        id: 'deepseek-v4-flash-free',
+        label: 'DeepSeek V4 Flash Free (gratuito)',
+        ctx: '1M',
+        free: true,
+        notes: 'FREE via OpenCode Zen. Mesmo modelo que o Unify endpoint 6 usa.',
+      },
+      {
+        id: 'deepseek-v4-flash',
+        label: 'DeepSeek V4 Flash',
+        ctx: '1M',
+        free: false,
+        notes: 'Versão paga, mais rápida que a Flash Free.',
+      },
+      {
+        id: 'deepseek-v4-pro',
+        label: 'DeepSeek V4 Pro',
+        ctx: '1M',
+        free: false,
+        notes: 'Máximo de performance DeepSeek.',
+      },
+      {
+        id: 'glm-5',
+        label: 'GLM-5 (Zhipu)',
+        ctx: '128k',
+        free: false,
+        notes: 'GLM-5 via OpenCode Zen.',
+      },
+      {
+        id: 'glm-5.1',
+        label: 'GLM-5.1 (Zhipu)',
+        ctx: '128k',
+        free: false,
+        notes: 'GLM-5.1 via OpenCode Zen.',
+      },
+    ],
+  },
+  {
     id: 'custom',
     label: 'Custom (digitar ID manualmente)',
     envVars: [],
     baseUrl: '',
     models: [
-      { id: '__custom__', label: 'Digitar ID…', free: true, notes: 'Use this for any model not in the list.' },
+      {
+        id: '__custom__',
+        label: 'Digitar ID…',
+        free: true,
+        notes: 'Use this for any model not in the list.',
+      },
     ],
   },
 ];

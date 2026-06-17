@@ -68,8 +68,8 @@ Toda vez que alterar código da extensão (`src/` ou `webview/`):
 ```
 node scripts/build.mjs --mode production
 npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix
-code --uninstall-extension hermes-agent.vscode-hermes-agent
-code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force
+"C:\Program Files\Microsoft VS Code\Code.exe" --uninstall-extension hermes-agent.vscode-hermes-agent
+"C:\Program Files\Microsoft VS Code\Code.exe" --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force
 → Pedir Reload Window
 ```
 

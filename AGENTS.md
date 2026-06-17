@@ -49,8 +49,8 @@ Cada ferramenta abaixo me dá contexto para tomar decisões melhores. Verifique 
 
 1. `node scripts/build.mjs --mode production`
 2. `npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix`
-3. `code --uninstall-extension hermes-agent.vscode-hermes-agent`
-4. `code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force`
+3. `"C:\Program Files\Microsoft VS Code\Code.exe" --uninstall-extension hermes-agent.vscode-hermes-agent`
+4. `"C:\Program Files\Microsoft VS Code\Code.exe" --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force`
 5. **Só então** pedir ao usuário para fazer **Reload Window**
 
 **NUNCA** peça ao usuário para verificar sem ter desinstalado e reinstalado antes.
@@ -58,18 +58,60 @@ O VS Code caches agressivamente a extensão .vsix instalada.
 
 ---
 
-## REGRA INEGOCIÁVEL #2: QA antes de entregar
+## REGRA INEGOCIÁVEL #2: QA antes de entregar (🌍 Nível Mundial)
 
-**Toda feature ou correção DEVE ser testada como QA profissional com evidências:**
+**Toda feature ou correção DEVE passar pelos 3 níveis de qualidade abaixo.
+NUNCA entregar sem verificar fluxo completo com evidências.**
 
-1. **Trace o fluxo completo** — webview → store → extension → service → resposta
-2. **Verifique contratos** — nomes de mensagens, campos, tipos em TODOS os pontos
-3. **Teste edge cases** — vazios, nulos, erros, timeouts
-4. **Build** — `node scripts/build.mjs --mode production` DEVE passar
-5. **Testes** — `npx vitest run` DEVE passar
-6. **Documente** — descreva o teste e resultado (pass/fail) antes de entregar
+### 🥉 Nível 1 — Essencial (obrigatório SEMPRE)
 
-**NUNCA** entregar sem verificar fluxo completo com evidências.
+```
+☐ Trace o fluxo completo: webview → store → extension → service → resposta
+☐ Verifique contratos: nomes de mensagens, campos, tipos em TODOS os pontos
+☐ Teste edge cases: vazios, nulos, erros, timeouts, cancelamento
+☐ Build: node scripts/build.mjs --mode production ✅
+☐ Testes: npx vitest run ✅  (mínimo 8/8 passando)
+☐ TypeCheck: npx tsc -p tsconfig.json --noEmit ✅
+☐ Documente: descreva o teste e resultado (pass/fail) na entrega
+```
+
+### 🥈 Nível 2 — Profissional (recomendado para toda entrega)
+
+```
+☐ Cobertura: npx vitest run --coverage ≥ 80% statements, ≥ 70% branches
+☐ Integração: teste o fluxo ACP real (hermes acp → prompt → resposta)
+☐ Lint: npx eslint src webview/src --quiet ✅
+☐ Formatação: npx prettier --check "src/**" "webview/**" ✅
+☐ Segurança: npm audit --audit-level=moderate ✅ (sem vulnerabilities moderadas)
+☐ Performance: dist/extension.js < 1MB, dist-webview/assets/main.js < 1MB
+```
+
+### 🥇 Nível 3 — World-Class (CI Pipeline — GitHub Actions)
+
+```
+☐ CI Pipeline: .github/workflows/ci.yml roda em todo push/PR
+☐ 6 gates automáticos: lint → typecheck → test/coverage → security → build → summary
+☐ Coverage gate: ≥ 80% statements, ≥ 70% branches, ≥ 75% functions
+☐ Bundle budget: host < 1MB, webview JS < 1MB, CSS < 100KB
+☐ Security scan: npm audit + hardcoded secrets detection
+☐ JUnit reports: gerados e arquivados
+☐ VSIX: gerado, verificado e arquivado como artifact
+```
+
+### Comando Rápido (local)
+
+```bash
+npm run fullcheck   # typecheck + lint + coverage + security + build
+```
+
+ou passo a passo:
+
+```bash
+npm run typecheck     # 🔷 TypeScript
+npm run test:coverage # 🧪 Tests + coverage
+npm run security      # 🔒 npm audit
+npm run build         # 📦 Build + bundle size check
+```
 
 ---
 
@@ -105,9 +147,9 @@ node scripts/build.mjs --mode production
 # Package
 npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix
 
-# Deploy (sempre: uninstall → install)
-code --uninstall-extension hermes-agent.vscode-hermes-agent
-code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force
+# Deploy (sempre: uninstall → install — usar VS Code estável, NÃO Insiders)
+"C:\Program Files\Microsoft VS Code\Code.exe" --uninstall-extension hermes-agent.vscode-hermes-agent
+"C:\Program Files\Microsoft VS Code\Code.exe" --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --force
 
 # Testes
 npm test          # rodar todos

@@ -4,6 +4,7 @@
 **/*.vsix
 **/coverage/**
 **/.git/**
+**/.github/**
 **/.opencode/**
 **/venv/**
 **/__pycache__/**

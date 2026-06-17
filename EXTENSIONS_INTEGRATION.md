@@ -353,40 +353,89 @@ code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --forc
 
 ---
 
-## 6. QA Checklist
+## 6. QA Checklist — 3 Níveis de Qualidade
 
-Antes de entregar qualquer alteração:
+> 🌍 **Nível Mundial**: toda alteração DEVE passar pelo Nível 1 (essencial) no mínimo.
+> Nível 2 (profissional) é recomendado. Nível 3 (world-class) é automático via CI.
 
-### ✅ Fluxo Completo
+### 🥉 Nível 1 — Essencial (obrigatório)
+
+#### ✅ Fluxo Completo
 
 - [ ] Leu TODOS os arquivos envolvidos no caminho de dados
-- [ ] Verificou: webview → store → extension → service → resposta
+- [ ] Traçou: webview → store → extension → service → resposta
 - [ ] Confirmou que cada etapa do fluxo está conectada
 
-### ✅ Contratos
+#### ✅ Contratos
 
 - [ ] Nomes de mensagens (postMessage) batem entre webview e host
 - [ ] Campos de interface/type estão consistentes
 - [ ] Tipos TypeScript estão corretos (sem `any` desnecessário)
 
-### ✅ Edge Cases
+#### ✅ Edge Cases
 
 - [ ] Valores vazios/nulos não causam crash
 - [ ] Erros de rede/processo são tratados com fallback
 - [ ] Timeouts são respeitados (ProcessRunner: 5-10min)
 - [ ] Cancelamento de operações funciona
 
-### ✅ Build & Testes
+#### ✅ Build & Testes
 
 - [ ] `node scripts/build.mjs --mode production` passa sem erros
-- [ ] `npx vitest run` passa
+- [ ] `npx vitest run` passa (mínimo 8/8)
 - [ ] `npx tsc --noEmit` nos dois tsconfigs passa
 
-### ✅ Deploy
+#### ✅ Deploy
 
 - [ ] Build → package → uninstall → install → Reload Window
 - [ ] Extensão aparece no activity bar após reload
 - [ ] Funcionalidade alterada/testada funciona
+
+### 🥈 Nível 2 — Profissional
+
+#### ✅ Cobertura
+
+- [ ] `npx vitest run --coverage`
+- [ ] Statements ≥ 80%, Branches ≥ 70%, Functions ≥ 75%
+- [ ] Cobertura para código novo: ≥ 90%
+
+#### ✅ Integração
+
+- [ ] Testar fluxo ACP real: `hermes acp` → prompt → resposta
+- [ ] Verificar logs de erro e warning
+- [ ] Testar com modelo real (pelo menos 1 troca)
+
+#### ✅ Estilo & Segurança
+
+- [ ] `npx eslint src webview/src --quiet` sem warnings
+- [ ] `npx prettier --check "src/**" "webview/**"` sem diferenças
+- [ ] `npm audit --audit-level=moderate` sem vulnerabilidades
+- [ ] Sem credenciais ou secrets no código fonte
+
+#### ✅ Performance
+
+- [ ] `dist/extension.js` < 1MB
+- [ ] `dist-webview/assets/main.js` < 1MB
+- [ ] `dist-webview/assets/main.css` < 100KB
+
+### 🥇 Nível 3 — World-Class (CI Pipeline)
+
+```
+☐ CI Pipeline (.github/workflows/ci.yml) roda em todo push/PR
+☐ 6 gates: lint → typecheck → test/coverage → security → build → summary
+☐ Coverage gate: ≥ 80% statements, ≥ 70% branches, ≥ 75% functions
+☐ Bundle budget: host < 1MB, webview JS < 1MB, CSS < 100KB
+☐ Security scan: npm audit + hardcoded secrets detection
+☐ JUnit reports gerados e arquivados
+☐ VSIX gerado e disponível como artifact do pipeline
+```
+
+### 🚀 Comando Rápido
+
+```bash
+npm run fullcheck   # typecheck + lint report + coverage + security + build
+npm run ci          # mesmo que fullcheck (para CI local)
+```
 
 ---
 

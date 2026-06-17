@@ -7,6 +7,7 @@ import { acpManager } from './acp/manager';
 import { hermesDetector } from './services/hermesDetector';
 import { secretsService } from './services/secretsService';
 import { configService } from './services/configService';
+import { hermesEnvService, HERMES_ENV_MAP } from './services/hermesEnvService';
 
 let chatProvider: ChatPanelProvider;
 
@@ -67,6 +68,21 @@ export async function activate(context: vscode.ExtensionContext) {
       type: 'error',
       message: `Hermes not found. Install it or set \`hermes-agent.path\` in settings.`,
     });
+  }
+
+  // Auto-check: if OpenCode Zen key is missing, prompt user to configure it
+  if (!(await hermesEnvService.hasKey('OPENCODE_ZEN_API_KEY'))) {
+    // Small delay so the UI settles first
+    setTimeout(async () => {
+      const action = await vscode.window.showInformationMessage(
+        'Hermes: OpenCode Zen API key not configured. Configure it now for free model access?',
+        'Configure API Key',
+        'Not now',
+      );
+      if (action === 'Configure API Key') {
+        await vscode.commands.executeCommand('hermes-agent.configureApiKey');
+      }
+    }, 1500);
   }
 
   logger.info('Hermes Agent for VS Code activated');
