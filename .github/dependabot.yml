@@ -1,0 +1,63 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 🤖 Dependabot — Automated Dependency Updates
+# ─────────────────────────────────────────────────────────────────────────────
+# Mantém dependências do projeto atualizadas automaticamente via PRs.
+# Escaneia semanalmente npm e GitHub Actions.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: 2
+updates:
+  # ─── npm (runtime + dev dependencies) ─────────────────────
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'America/Sao_Paulo'
+    # Agrupar patches e minors em um único PR
+    groups:
+      production-dependencies:
+        dependency-type: 'production'
+        update-types:
+          - 'patch'
+          - 'minor'
+      development-dependencies:
+        dependency-type: 'development'
+        update-types:
+          - 'patch'
+          - 'minor'
+    # Labels para identificar PRs do Dependabot
+    labels:
+      - 'dependencies'
+      - 'automated'
+    # Limite de PRs abertos simultaneamente
+    open-pull-requests-limit: 10
+    # Estratégia de versionamento
+    versioning-strategy: increase
+    # Revisores automáticos
+    reviewers:
+      - 'zaozbr'
+    # Mensagem do commit
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+      include: 'scope'
+
+  # ─── GitHub Actions ──────────────────────────────────────
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'America/Sao_Paulo'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'zaozbr'
+    commit-message:
+      prefix: 'chore(ci)'
+      include: 'scope'

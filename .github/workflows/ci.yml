@@ -12,6 +12,9 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main]
+  schedule:
+    # ─── Security scan semanal: toda segunda 06:00 BRT ───
+    - cron: '0 9 * * 1' # 09:00 UTC = 06:00 BRT
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -179,12 +182,53 @@ jobs:
         run: |
           echo "✅ VSIX packaged: $(ls -lh vscode-hermes-agent-ci.vsix | awk '{print $5}')"
 
-  # ─── Gate 6: Summary ──────────────────────────────────────
+  # ─── Gate 6: E2E Tests (Playwright) ──────────────────────
+  e2e:
+    name: 🎭 E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build webview assets
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+
+      - name: Upload E2E report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 7
+
+  # ─── Gate 7: Summary ──────────────────────────────────────
   summary:
     name: 📋 CI Summary
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, security, build]
+    needs: [lint, typecheck, test, security, build, e2e]
     if: always()
+    # Permite que summary rode mesmo se e2e for skipped por conditional
     steps:
       - run: |
           echo "╔══════════════════════════════════════════════════╗"
@@ -194,6 +238,7 @@ jobs:
           echo "  🧹 Lint & Format:      ${{ needs.lint.result }}"
           echo "  🔷 Type Check:         ${{ needs.typecheck.result }}"
           echo "  🧪 Tests & Coverage:   ${{ needs.test.result }}"
+          echo "  🎭 E2E Tests:          ${{ needs.e2e.result }}"
           echo "  🔒 Security Audit:     ${{ needs.security.result }}"
           echo "  📦 Build & Package:    ${{ needs.build.result }}"
           echo ""

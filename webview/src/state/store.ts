@@ -24,7 +24,16 @@ export interface Message {
   toolOutput?: string;
 }
 
-export type ToolKind = 'read' | 'edit' | 'delete' | 'move' | 'search' | 'execute' | 'think' | 'fetch' | 'other';
+export type ToolKind =
+  | 'read'
+  | 'edit'
+  | 'delete'
+  | 'move'
+  | 'search'
+  | 'execute'
+  | 'think'
+  | 'fetch'
+  | 'other';
 
 export interface PlanEntry {
   content: string;
@@ -42,6 +51,22 @@ export interface McpInfo {
   name: string;
   transport: string;
   enabled: boolean;
+}
+
+export interface McpServerDetail {
+  name: string;
+  tools: Array<{ name: string; description: string }>;
+  status: 'connected' | 'disconnected' | 'error' | 'unknown';
+  error?: string;
+}
+
+export interface McpInstallForm {
+  open: boolean;
+  type: 'registry' | 'custom';
+  customName?: string;
+  customCommand?: string;
+  customArgs?: string;
+  customUrl?: string;
 }
 
 export interface CatalogProvider {
@@ -74,6 +99,9 @@ export interface State {
   availableCommands: Array<{ name: string; description: string; inputHint?: string }>;
   skills: SkillInfo[];
   mcp: McpInfo[];
+  mcpDetail: Record<string, McpServerDetail>;
+  mcpError: string | null;
+  installForm: McpInstallForm;
   mode: 'code' | 'chat';
   sessionId: string | null;
   inProgress: boolean;
@@ -86,7 +114,13 @@ export interface State {
   error: string | null;
   info: string | null;
   detection: { found: boolean; path?: string; version?: string } | null;
-  installSteps: Array<{ id: string; label: string; description: string; status: string; detail?: string }>;
+  installSteps: Array<{
+    id: string;
+    label: string;
+    description: string;
+    status: string;
+    detail?: string;
+  }>;
   stepLogs: Record<string, string>;
   catalog: CatalogProvider[];
   providerModels: Record<string, Array<{ id: string; label: string }>>;
@@ -109,6 +143,9 @@ const initial: State = {
   availableCommands: [],
   skills: [],
   mcp: [],
+  mcpDetail: {},
+  mcpError: null,
+  installForm: { open: false, type: 'registry' },
   mode: 'code',
   sessionId: null,
   inProgress: false,
@@ -130,7 +167,12 @@ const initial: State = {
   lastAgentMessageId: null,
   lastThoughtMessageId: null,
   agents: [
-    { name: 'build', description: 'Agente principal para código e alterações', mode: 'primary', color: '#4caf50' },
+    {
+      name: 'build',
+      description: 'Agente principal para código e alterações',
+      mode: 'primary',
+      color: '#4caf50',
+    },
     { name: 'plan', description: 'Planejamento e análise', mode: 'primary', color: '#2196f3' },
     { name: 'general', description: 'Conversas gerais', mode: 'primary', color: '#9c27b0' },
     { name: 'explore', description: 'Exploração de código', mode: 'primary', color: '#ff9800' },
@@ -188,10 +230,22 @@ class Store {
         this.set((s) => ({ ...s, inProgress: false }));
         break;
       case 'session-created':
-        this.set((s) => ({ ...s, sessionId: msg.sessionId ?? null, messages: [], plan: [], lastAgentMessageId: null }));
+        this.set((s) => ({
+          ...s,
+          sessionId: msg.sessionId ?? null,
+          messages: [],
+          plan: [],
+          lastAgentMessageId: null,
+        }));
         break;
       case 'session-resumed':
-        this.set((s) => ({ ...s, sessionId: msg.sessionId, messages: [], plan: [], lastAgentMessageId: null }));
+        this.set((s) => ({
+          ...s,
+          sessionId: msg.sessionId,
+          messages: [],
+          plan: [],
+          lastAgentMessageId: null,
+        }));
         break;
       case 'session-active':
         this.set((s) => ({ ...s, sessionId: msg.session?.sessionId ?? null }));
@@ -200,7 +254,31 @@ class Store {
         this.set((s) => ({ ...s, skills: msg.list ?? [] }));
         break;
       case 'mcp-list':
-        this.set((s) => ({ ...s, mcp: msg.list ?? [] }));
+        this.set((s) => ({ ...s, mcp: msg.list ?? [], mcpError: null }));
+        break;
+      case 'mcp-installed':
+        // Refresh list after install
+        this.set((s) => ({ ...s, installForm: { open: false, type: 'registry' } }));
+        // Request a fresh list from extension
+        setTimeout(() => store.loadMcp(), 500);
+        break;
+      case 'mcp-removed':
+        // Refresh list after removal
+        setTimeout(() => store.loadMcp(), 500);
+        break;
+      case 'mcp-tools':
+        if (msg.serverName) {
+          this.set((s) => ({
+            ...s,
+            mcpDetail: {
+              ...s.mcpDetail,
+              [msg.serverName]: msg.detail as McpServerDetail,
+            },
+          }));
+        }
+        break;
+      case 'mcp-error':
+        this.set((s) => ({ ...s, mcpError: msg.message ?? null }));
         break;
       case 'error':
         this.set((s) => ({ ...s, error: msg.message, inProgress: false }));
@@ -248,7 +326,9 @@ class Store {
         const newModel = msg.model ?? null;
         this.set((s) => {
           const prevConfigured = s.modelStatus.configured;
-          const switched = prevConfigured && (s.modelStatus.provider !== newProvider || s.modelStatus.model !== newModel);
+          const switched =
+            prevConfigured &&
+            (s.modelStatus.provider !== newProvider || s.modelStatus.model !== newModel);
           return {
             ...s,
             modelStatus: {
@@ -262,7 +342,9 @@ class Store {
               provider: newProvider ?? s.status.provider,
               model: newModel ?? s.status.model,
             },
-            previousModel: switched ? { provider: s.modelStatus.provider, model: s.modelStatus.model } : s.previousModel,
+            previousModel: switched
+              ? { provider: s.modelStatus.provider, model: s.modelStatus.model }
+              : s.previousModel,
           };
         });
         break;
@@ -273,7 +355,10 @@ class Store {
           ...s,
           modelValidation: { ok, detail: msg.detail ?? '' },
           // If validation fails and we have a previous model, show revert option
-          error: !ok && s.previousModel ? `Modelo inválido: ${msg.detail ?? 'desconhecido'}. Volte ao modelo anterior.` : s.error,
+          error:
+            !ok && s.previousModel
+              ? `Modelo inválido: ${msg.detail ?? 'desconhecido'}. Volte ao modelo anterior.`
+              : s.error,
         }));
         break;
       }
@@ -343,7 +428,8 @@ class Store {
   }
 
   private mkMessage(kind: 'user' | 'agent' | 'thought' | 'system', sid: string, u: any): Message {
-    const id = u.messageId ?? `${sid}:${kind}:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
+    const id =
+      u.messageId ?? `${sid}:${kind}:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
     return {
       id,
       kind,
@@ -352,7 +438,11 @@ class Store {
     };
   }
 
-  private mkToolMessage(sid: string, u: any, status: 'pending' | 'in_progress' | 'completed' | 'failed'): Message {
+  private mkToolMessage(
+    sid: string,
+    u: any,
+    status: 'pending' | 'in_progress' | 'completed' | 'failed',
+  ): Message {
     const id = u.toolCallId ?? `${sid}:tool:${Date.now()}`;
     return {
       id,
@@ -386,7 +476,9 @@ class Store {
       .filter(Boolean)
       .join('\n');
   }
-  private extractDiff(content: any[]): { path: string; oldText?: string; newText: string } | undefined {
+  private extractDiff(
+    content: any[],
+  ): { path: string; oldText?: string; newText: string } | undefined {
     if (!Array.isArray(content)) return undefined;
     const d = content.find((c) => c.type === 'diff');
     if (!d) return undefined;
@@ -410,9 +502,7 @@ class Store {
       if (!id && lastId && s.messages.find((m) => m.id === lastId)) {
         return {
           ...s,
-          messages: s.messages.map((m) =>
-            m.id === lastId ? { ...m, text: m.text + text } : m
-          ),
+          messages: s.messages.map((m) => (m.id === lastId ? { ...m, text: m.text + text } : m)),
         };
       }
       const newId = id ?? `${sid}:${kind}:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
@@ -445,7 +535,11 @@ class Store {
   }
 
   // actions
-  send(text: string, images: Array<{ data: string; mimeType: string }> = [], resources: Array<{ uri: string; mimeType?: string; text?: string }> = []) {
+  send(
+    text: string,
+    images: Array<{ data: string; mimeType: string }> = [],
+    resources: Array<{ uri: string; mimeType?: string; text?: string }> = [],
+  ) {
     this.set((s) => ({
       ...s,
       inProgress: true,
@@ -505,6 +599,42 @@ class Store {
     vscode.postMessage({ type: 'toggle-mcp', name, enabled });
   }
 
+  installMcp(name: string) {
+    vscode.postMessage({ type: 'install-mcp', name });
+  }
+
+  removeMcp(name: string) {
+    vscode.postMessage({ type: 'remove-mcp', name });
+  }
+
+  addMcpServer(
+    config:
+      | { name: string; command: string; args: string[] }
+      | { name: string; url: string; type: string },
+  ) {
+    vscode.postMessage({ type: 'add-mcp', config });
+  }
+
+  testMcpConnection(name: string) {
+    vscode.postMessage({ type: 'test-mcp', name });
+  }
+
+  loadMcpTools(name: string) {
+    vscode.postMessage({ type: 'load-mcp-tools', name });
+  }
+
+  openMcpInstallForm(type: 'registry' | 'custom') {
+    this.set((s) => ({ ...s, installForm: { open: true, type } }));
+  }
+
+  closeMcpInstallForm() {
+    this.set((s) => ({ ...s, installForm: { open: false, type: 'registry' as const } }));
+  }
+
+  clearMcpError() {
+    this.set((s) => ({ ...s, mcpError: null }));
+  }
+
   setModel(provider: string, model: string, customModel?: string) {
     vscode.postMessage({ type: 'set-model', provider, model, customModel });
   }
@@ -512,7 +642,11 @@ class Store {
   revertModel() {
     const prev = this.state.previousModel;
     if (prev) {
-      vscode.postMessage({ type: 'set-model', provider: prev.provider ?? '', model: prev.model ?? '' });
+      vscode.postMessage({
+        type: 'set-model',
+        provider: prev.provider ?? '',
+        model: prev.model ?? '',
+      });
     }
   }
 
@@ -578,6 +712,14 @@ export function useStore() {
     loadSkills: store.loadSkills.bind(store),
     loadMcp: store.loadMcp.bind(store),
     toggleMcp: store.toggleMcp.bind(store),
+    installMcp: store.installMcp.bind(store),
+    removeMcp: store.removeMcp.bind(store),
+    addMcpServer: store.addMcpServer.bind(store),
+    testMcpConnection: store.testMcpConnection.bind(store),
+    loadMcpTools: store.loadMcpTools.bind(store),
+    openMcpInstallForm: store.openMcpInstallForm.bind(store),
+    closeMcpInstallForm: store.closeMcpInstallForm.bind(store),
+    clearMcpError: store.clearMcpError.bind(store),
     setModel: store.setModel.bind(store),
     revertModel: store.revertModel.bind(store),
     getCatalog: store.getCatalog.bind(store),

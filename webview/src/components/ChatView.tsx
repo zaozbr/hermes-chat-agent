@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore } from '../state/store';
 import { renderMarkdown } from '../utils/markdown';
-import type { Message, McpInfo } from '../state/store';
+import type { Message, McpInfo, McpServerDetail, McpInstallForm } from '../state/store';
 import { ToolCallCard } from './ToolCallCard';
 import { PlanList } from './PlanList';
 import { PermissionDialog } from './PermissionDialog';
@@ -10,11 +10,11 @@ import { vscode } from '../utils/vscode';
 type TabId = 'chat' | 'setup' | 'cascade' | 'config' | 'mcp' | 'tweaks';
 
 const TABS: Array<{ id: TabId; icon: string; label: string }> = [
-  { id: 'chat',   icon: '💬', label: 'Chat' },
-  { id: 'setup',  icon: '✦',  label: 'Setup' },
+  { id: 'chat', icon: '💬', label: 'Chat' },
+  { id: 'setup', icon: '✦', label: 'Setup' },
   { id: 'cascade', icon: '🔗', label: 'Cascade' },
-  { id: 'config', icon: '⚙',  label: 'Configurações' },
-  { id: 'mcp',    icon: '🔌', label: 'MCP' },
+  { id: 'config', icon: '⚙', label: 'Configurações' },
+  { id: 'mcp', icon: '🔌', label: 'MCP' },
   { id: 'tweaks', icon: '⚡', label: 'Tweaks' },
 ];
 
@@ -66,8 +66,12 @@ export function ChatView() {
           )}
         </div>
         <div className="chat-actions">
-          <button onClick={() => s.newSession(s.mode)} title="Nova sessão">➕</button>
-          <button onClick={() => s.cancel()} title="Cancelar" disabled={!s.inProgress}>⏹</button>
+          <button onClick={() => s.newSession(s.mode)} title="Nova sessão">
+            ➕
+          </button>
+          <button onClick={() => s.cancel()} title="Cancelar" disabled={!s.inProgress}>
+            ⏹
+          </button>
         </div>
       </header>
 
@@ -91,7 +95,9 @@ export function ChatView() {
         <div className="usage-bar" title={`${s.status.usage.used} / ${s.status.usage.size} tokens`}>
           <div
             className="usage-fill"
-            style={{ width: `${Math.min(100, (s.status.usage.used / s.status.usage.size) * 100)}%` }}
+            style={{
+              width: `${Math.min(100, (s.status.usage.used / s.status.usage.size) * 100)}%`,
+            }}
           />
         </div>
       )}
@@ -120,8 +126,12 @@ function ChatPanel({ s }: { s: ReturnType<typeof useStore> }) {
           <strong>⚠ Hermes não conectado.</strong>
           <p>{s.status.error ?? 'O servidor ACP está offline.'}</p>
           <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-            <button onClick={() => vscode.postMessage({ type: 'retry-connect' })}>🔌 Conectar</button>
-            <button onClick={() => vscode.postMessage({ type: 'open-onboarding' })}>✦ Assistente de Setup</button>
+            <button onClick={() => vscode.postMessage({ type: 'retry-connect' })}>
+              🔌 Conectar
+            </button>
+            <button onClick={() => vscode.postMessage({ type: 'open-onboarding' })}>
+              ✦ Assistente de Setup
+            </button>
           </div>
         </div>
       )}
@@ -133,7 +143,9 @@ function ChatPanel({ s }: { s: ReturnType<typeof useStore> }) {
             O modelo atual não está funcionando. Você pode voltar ao modelo anterior.
           </p>
           <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-            <button onClick={() => s.revertModel()}>↩ Voltar para {formatModelBadge(s.previousModel.provider, s.previousModel.model)}</button>
+            <button onClick={() => s.revertModel()}>
+              ↩ Voltar para {formatModelBadge(s.previousModel.provider, s.previousModel.model)}
+            </button>
             <button onClick={() => s.validateModel()}>🔍 Verificar novamente</button>
           </div>
         </div>
@@ -142,11 +154,11 @@ function ChatPanel({ s }: { s: ReturnType<typeof useStore> }) {
       {s.status.connected && !(s.status.model && s.status.provider) && (
         <div className="banner warn" style={{ margin: '0 10px 8px' }}>
           <strong>⚠ Modelo não configurado.</strong>
-          <p style={{ margin: '4px 0 0' }}>
-            Configure um provedor + modelo no Setup.
-          </p>
+          <p style={{ margin: '4px 0 0' }}>Configure um provedor + modelo no Setup.</p>
           <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-            <button onClick={() => vscode.postMessage({ type: 'open-onboarding' })}>✦ Abrir Setup</button>
+            <button onClick={() => vscode.postMessage({ type: 'open-onboarding' })}>
+              ✦ Abrir Setup
+            </button>
             <button onClick={() => s.validateModel()}>🔍 Verificar agora</button>
           </div>
           {s.modelValidation && (
@@ -163,9 +175,13 @@ function ChatPanel({ s }: { s: ReturnType<typeof useStore> }) {
         {s.messages.length === 0 && (
           <div className="empty">
             <p>👋 Diga oi ao Hermes.</p>
-            <p className="muted">Modo Edit: alterações no repo. Modo Ask: perguntas e explicações.</p>
+            <p className="muted">
+              Modo Edit: alterações no repo. Modo Ask: perguntas e explicações.
+            </p>
             {s.status.connected && !s.sessionId && (
-              <button onClick={() => s.newSession(s.mode)} style={{ marginTop: 12 }}>➕ Iniciar sessão</button>
+              <button onClick={() => s.newSession(s.mode)} style={{ marginTop: 12 }}>
+                ➕ Iniciar sessão
+              </button>
             )}
           </div>
         )}
@@ -173,7 +189,11 @@ function ChatPanel({ s }: { s: ReturnType<typeof useStore> }) {
           <MessageBubble key={m.id} m={m} />
         ))}
         {s.inProgress && s.messages.at(-1)?.kind === 'user' && (
-          <div className="typing"><span /><span /><span /></div>
+          <div className="typing">
+            <span />
+            <span />
+            <span />
+          </div>
         )}
       </div>
     </main>
@@ -188,12 +208,18 @@ function PanelWrapper({ children }: { children: React.ReactNode }) {
 
 function getPanel(tab: TabId, s: ReturnType<typeof useStore>) {
   switch (tab) {
-    case 'setup': return <SetupPanel s={s} />;
-    case 'cascade': return <CascadePanel s={s} />;
-    case 'config': return <ConfigPanel s={s} />;
-    case 'mcp': return <McpPanel s={s} />;
-    case 'tweaks': return <TweaksPanel s={s} />;
-    default: return null;
+    case 'setup':
+      return <SetupPanel s={s} />;
+    case 'cascade':
+      return <CascadePanel s={s} />;
+    case 'config':
+      return <ConfigPanel s={s} />;
+    case 'mcp':
+      return <McpPanel s={s} />;
+    case 'tweaks':
+      return <TweaksPanel s={s} />;
+    default:
+      return null;
   }
 }
 
@@ -212,7 +238,10 @@ function MessageBubble({ m }: { m: Message }) {
   if (m.kind === 'system') {
     return (
       <div className="msg system">
-        <div className="bubble muted" dangerouslySetInnerHTML={{ __html: renderMarkdown(m.text) }} />
+        <div
+          className="bubble muted"
+          dangerouslySetInnerHTML={{ __html: renderMarkdown(m.text) }}
+        />
       </div>
     );
   }
@@ -234,8 +263,8 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
   const placeholder = !s.status.connected
     ? 'Conecte o Hermes primeiro…'
     : s.inProgress
-    ? 'Hermes está trabalhando… (Esc para cancelar)'
-    : 'Pergunte algo ao Hermes…   (Enter envia · Shift+Enter nova linha)';
+      ? 'Hermes está trabalhando… (Esc para cancelar)'
+      : 'Pergunte algo ao Hermes…   (Enter envia · Shift+Enter nova linha)';
 
   useEffect(() => {
     s.loadAgents();
@@ -263,9 +292,9 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
   function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files?.length) return;
-    const names = Array.from(files).map(f => f.name);
-    const mention = names.map(n => `@file ${n}`).join(' ');
-    setValue(prev => prev ? `${prev} ${mention}` : mention);
+    const names = Array.from(files).map((f) => f.name);
+    const mention = names.map((n) => `@file ${n}`).join(' ');
+    setValue((prev) => (prev ? `${prev} ${mention}` : mention));
     e.target.value = '';
   }
 
@@ -277,22 +306,30 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
     el.style.height = Math.min(lineHeight * 8 + 16, el.scrollHeight) + 'px';
   }, [value]);
 
-  const currentAgent = s.agents.find(a => a.name === s.currentAgent) ?? s.agents[0];
+  const currentAgent = s.agents.find((a) => a.name === s.currentAgent) ?? s.agents[0];
 
   return (
     <footer className="chat-input">
       <div className="input-mode-row">
         <div className="mode-tabs" role="tablist">
-          <button type="button" role="tab" aria-selected={s.mode === 'code'}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={s.mode === 'code'}
             className={`mode-tab ${s.mode === 'code' ? 'active' : ''}`}
             onClick={() => s.setMode('code')}
-            title="Modo Edit: aplica mudanças no repositório">
+            title="Modo Edit: aplica mudanças no repositório"
+          >
             <span className="mode-icon">✦</span> Edit
           </button>
-          <button type="button" role="tab" aria-selected={s.mode === 'chat'}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={s.mode === 'chat'}
             className={`mode-tab ${s.mode === 'chat' ? 'active' : ''}`}
             onClick={() => s.setMode('chat')}
-            title="Modo Ask: perguntas e explicações">
+            title="Modo Ask: perguntas e explicações"
+          >
             <span className="mode-icon">💬</span> Ask
           </button>
           <span className="grow" />
@@ -311,10 +348,17 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
           className="attach-btn"
           onClick={() => fileInputRef.current?.click()}
           title="Anexar arquivo (📎)"
-          aria-label="Anexar arquivo">
+          aria-label="Anexar arquivo"
+        >
           📎
         </button>
-        <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={onFiles} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          style={{ display: 'none' }}
+          onChange={onFiles}
+        />
         <textarea
           ref={textareaRef}
           className="input"
@@ -324,8 +368,14 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={onKeyDown}
         />
-        <button type="button" className="send-btn" onClick={send}
-          disabled={!value.trim()} title="Enviar (Enter)" aria-label="Enviar">
+        <button
+          type="button"
+          className="send-btn"
+          onClick={send}
+          disabled={!value.trim()}
+          title="Enviar (Enter)"
+          aria-label="Enviar"
+        >
           {s.inProgress ? '⏹' : '➤'}
         </button>
       </div>
@@ -334,14 +384,15 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
         <div className="selector-group">
           <label className="selector-label">Agente:</label>
           <div className="agent-selector">
-            {s.agents.map(a => (
+            {s.agents.map((a) => (
               <button
                 key={a.name}
                 type="button"
                 className={`agent-chip ${a.name === s.currentAgent ? 'active' : ''}`}
                 onClick={() => s.switchAgent(a.name)}
                 title={a.description}
-                style={{ '--chip-color': a.color } as React.CSSProperties}>
+                style={{ '--chip-color': a.color } as React.CSSProperties}
+              >
                 <span className="chip-dot" />
                 {a.name}
               </button>
@@ -355,7 +406,8 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
             type="button"
             className={`model-selector-btn ${s.modelValidation && !s.modelValidation.ok ? 'invalid' : ''}`}
             onClick={() => setShowModelPicker(!showModelPicker)}
-            title="Trocar modelo">
+            title="Trocar modelo"
+          >
             {formatModelBadge(s.status.provider, s.status.model)}
             {s.modelValidation && !s.modelValidation.ok && <span className="model-warn">⚠</span>}
             <span className="chevron">{showModelPicker ? '▲' : '▼'}</span>
@@ -365,7 +417,8 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
               type="button"
               className="revert-btn"
               onClick={() => s.revertModel()}
-              title="Voltar ao modelo anterior">
+              title="Voltar ao modelo anterior"
+            >
               ↩ Voltar
             </button>
           )}
@@ -373,7 +426,13 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
       </div>
 
       {showModelPicker && (
-        <ModelPicker s={s} onSelect={(p, m) => { s.setModel(p, m); setShowModelPicker(false); }} />
+        <ModelPicker
+          s={s}
+          onSelect={(p, m) => {
+            s.setModel(p, m);
+            setShowModelPicker(false);
+          }}
+        />
       )}
 
       <div className="input-status">
@@ -381,17 +440,21 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
         {s.sessionId && <span className="muted">· sessão {s.sessionId.slice(0, 8)}</span>}
         {s.status.usage && (
           <span className="muted">
-            · {(s.status.usage.used / 1000).toFixed(1)}k / {(s.status.usage.size / 1000).toFixed(0)}k tokens
+            · {(s.status.usage.used / 1000).toFixed(1)}k / {(s.status.usage.size / 1000).toFixed(0)}
+            k tokens
           </span>
         )}
         {s.inProgress && (
-          <button className="link-btn" onClick={() => s.cancel()}>· Cancelar</button>
+          <button className="link-btn" onClick={() => s.cancel()}>
+            · Cancelar
+          </button>
         )}
         <span className="grow" />
         <button
           className={`link-btn ${s.autoApprove ? 'on' : ''}`}
           onClick={() => vscode.postMessage({ type: 'toggle-auto-approve' })}
-          title={s.autoApprove ? 'Auto-approve: ON' : 'Auto-approve: OFF'}>
+          title={s.autoApprove ? 'Auto-approve: ON' : 'Auto-approve: OFF'}
+        >
           {s.autoApprove ? '✓ auto-approve' : '◯ auto-approve'}
         </button>
       </div>
@@ -401,12 +464,18 @@ function InputBox({ s }: { s: ReturnType<typeof useStore> }) {
 
 /* ─── Model Picker Dropdown ──────────────────────────────────────────────── */
 
-function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect: (provider: string, model: string) => void }) {
+function ModelPicker({
+  s,
+  onSelect,
+}: {
+  s: ReturnType<typeof useStore>;
+  onSelect: (provider: string, model: string) => void;
+}) {
   const [filter, setFilter] = useState('');
   const [customModel, setCustomModel] = useState('');
   const [validating, setValidating] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>(
-    s.status.provider || (s.catalog.length > 0 ? s.catalog[0].id : '')
+    s.status.provider || (s.catalog.length > 0 ? s.catalog[0].id : ''),
   );
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -417,7 +486,7 @@ function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect
 
   // Sync selected provider when catalog changes (e.g., after storing a new API key)
   useEffect(() => {
-    if (s.catalog.length > 0 && !s.catalog.find(p => p.id === selectedProvider)) {
+    if (s.catalog.length > 0 && !s.catalog.find((p) => p.id === selectedProvider)) {
       setSelectedProvider(s.catalog[0].id);
     }
   }, [s.catalog, selectedProvider]);
@@ -440,12 +509,17 @@ function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect
 
   // Use fetched models if available, fall back to catalog
   const fetchedModels = s.providerModels[selectedProvider] ?? [];
-  const catalogEntry = s.catalog.find(p => p.id === selectedProvider);
+  const catalogEntry = s.catalog.find((p) => p.id === selectedProvider);
   const catalogModels = catalogEntry?.models ?? [];
   const allModels = fetchedModels.length > 0 ? fetchedModels : catalogModels;
 
   const filteredModels = allModels
-    .filter(m => !filter || m.label.toLowerCase().includes(filter.toLowerCase()) || m.id.toLowerCase().includes(filter.toLowerCase()))
+    .filter(
+      (m) =>
+        !filter ||
+        m.label.toLowerCase().includes(filter.toLowerCase()) ||
+        m.id.toLowerCase().includes(filter.toLowerCase()),
+    )
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const fetchError = s.providerModelsError[selectedProvider];
@@ -466,9 +540,12 @@ function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect
         <select
           className="provider-select"
           value={selectedProvider}
-          onChange={(e) => setSelectedProvider(e.target.value)}>
-          {s.catalog.map(p => (
-            <option key={p.id} value={p.id}>{p.label}</option>
+          onChange={(e) => setSelectedProvider(e.target.value)}
+        >
+          {s.catalog.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.label}
+            </option>
           ))}
         </select>
         <input
@@ -487,23 +564,42 @@ function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect
           </div>
         )}
         {fetchError && fetchError === 'nvidia-permission' && (
-          <div className="muted" style={{ padding: '12px 8px', textAlign: 'center', fontSize: '0.85em', lineHeight: 1.5 }}>
-            <div style={{ color: '#f90', marginBottom: 4 }}>⚠ Não foi possível listar modelos da API</div>
+          <div
+            className="muted"
+            style={{
+              padding: '12px 8px',
+              textAlign: 'center',
+              fontSize: '0.85em',
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ color: '#f90', marginBottom: 4 }}>
+              ⚠ Não foi possível listar modelos da API
+            </div>
             <div style={{ opacity: 0.8 }}>
               Sua conta NVIDIA pode estar sem a permissão <b>Public API Endpoints</b>.
-              <br />Solicite no fórum:
               <br />
-              <a href="https://forums.developer.nvidia.com/c/ai-data-science/nvidia-nim/access-accounts/699"
-                 target="_blank" rel="noopener"
-                 style={{ color: '#8ab4f8' }}>
+              Solicite no fórum:
+              <br />
+              <a
+                href="https://forums.developer.nvidia.com/c/ai-data-science/nvidia-nim/access-accounts/699"
+                target="_blank"
+                rel="noopener"
+                style={{ color: '#8ab4f8' }}
+              >
                 forums.developer.nvidia.com/.../access-accounts
               </a>
             </div>
-            <div style={{ opacity: 0.6, marginTop: 4, fontSize: '0.9em' }}>Usando catálogo estático como fallback</div>
+            <div style={{ opacity: 0.6, marginTop: 4, fontSize: '0.9em' }}>
+              Usando catálogo estático como fallback
+            </div>
           </div>
         )}
         {fetchError && fetchError !== 'nvidia-permission' && (
-          <div className="muted" style={{ padding: '12px 8px', textAlign: 'center', color: '#f44' }}>
+          <div
+            className="muted"
+            style={{ padding: '12px 8px', textAlign: 'center', color: '#f44' }}
+          >
             Erro: {fetchError}
           </div>
         )}
@@ -511,17 +607,25 @@ function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect
           <div key={catalogEntry.id} className="model-provider">
             <div className="provider-name">
               {catalogEntry.label}
-              {fetchedModels.length > 0 && <span style={{opacity:0.5, fontSize:'0.85em'}}> ({fetchedModels.length} modelos da API)</span>}
+              {fetchedModels.length > 0 && (
+                <span style={{ opacity: 0.5, fontSize: '0.85em' }}>
+                  {' '}
+                  ({fetchedModels.length} modelos da API)
+                </span>
+              )}
             </div>
-            {filteredModels.map(m => (
+            {filteredModels.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 className={`model-option ${s.status.provider === catalogEntry.id && s.status.model === m.id ? 'current' : ''}`}
                 onClick={() => handleSelect(catalogEntry.id, m.id)}
-                title={(m as any).notes ?? m.label}>
+                title={(m as any).notes ?? m.label}
+              >
                 <span className="model-label">{m.label}</span>
-                {s.status.provider === catalogEntry.id && s.status.model === m.id && <span className="model-current">●</span>}
+                {s.status.provider === catalogEntry.id && s.status.model === m.id && (
+                  <span className="model-current">●</span>
+                )}
                 {(m as any).ctx && <span className="model-ctx">{(m as any).ctx}</span>}
                 {(m as any).free && <span className="model-free">grátis</span>}
               </button>
@@ -548,7 +652,11 @@ function ModelPicker({ s, onSelect }: { s: ReturnType<typeof useStore>; onSelect
           }}
         />
         {customModel.trim() && (
-          <button type="button" className="model-custom-btn" onClick={() => handleSelect(selectedProvider, customModel.trim())}>
+          <button
+            type="button"
+            className="model-custom-btn"
+            onClick={() => handleSelect(selectedProvider, customModel.trim())}
+          >
             Usar
           </button>
         )}
@@ -613,7 +721,9 @@ function SetupPanel({ s }: { s: ReturnType<typeof useStore> }) {
 /* ─── Cascade Panel ──────────────────────────────────────────────────────── */
 
 function CascadePanel({ s }: { s: ReturnType<typeof useStore> }) {
-  const [cascades, setCascades] = useState<Array<{ name: string; active: boolean; skills: string[] }>>([]);
+  const [cascades, setCascades] = useState<
+    Array<{ name: string; active: boolean; skills: string[] }>
+  >([]);
 
   useEffect(() => {
     vscode.postMessage({ type: 'load-cascades' });
@@ -627,9 +737,11 @@ function CascadePanel({ s }: { s: ReturnType<typeof useStore> }) {
       </div>
       <div className="panel-body">
         {cascades.length === 0 ? (
-          <p className="muted">Nenhuma cascade configurada. Use o Assistente de Setup para criar.</p>
+          <p className="muted">
+            Nenhuma cascade configurada. Use o Assistente de Setup para criar.
+          </p>
         ) : (
-          cascades.map(c => (
+          cascades.map((c) => (
             <div key={c.name} className="list-item">
               <span className={`dot ${c.active ? 'on' : 'off'}`} />
               <strong>{c.name}</strong>
@@ -647,7 +759,7 @@ function CascadePanel({ s }: { s: ReturnType<typeof useStore> }) {
 function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
   const [apiKeys, setApiKeys] = useState<Record<string, boolean>>({});
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
-  const [ keyValue, setKeyValue ] = useState('');
+  const [keyValue, setKeyValue] = useState('');
   const [showSaved, setShowSaved] = useState<string | null>(null);
   const [baseUrls, setBaseUrls] = useState<Record<string, string>>({});
   const [storedUrls, setStoredUrls] = useState<Record<string, string>>({});
@@ -712,7 +824,11 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 
   function saveKey() {
     if (!editingProvider || !keyValue.trim()) return;
-    vscode.postMessage({ type: 'save-api-key', provider: editingProvider, apiKey: keyValue.trim() });
+    vscode.postMessage({
+      type: 'save-api-key',
+      provider: editingProvider,
+      apiKey: keyValue.trim(),
+    });
   }
 
   function deleteKey(provider: string) {
@@ -721,7 +837,11 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 
   function saveBaseUrl() {
     if (!editingUrlProvider || !urlValue.trim()) return;
-    vscode.postMessage({ type: 'save-base-url', provider: editingUrlProvider, baseUrl: urlValue.trim() });
+    vscode.postMessage({
+      type: 'save-base-url',
+      provider: editingUrlProvider,
+      baseUrl: urlValue.trim(),
+    });
   }
 
   function deleteBaseUrl(provider: string) {
@@ -750,19 +870,22 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 
         <div className="config-group">
           <label>Chaves de API por Provedor</label>
-          <p className="muted" style={{ fontSize: 11 }}>Armazenadas de forma segura no VS Code. Reaplicadas automaticamente ao trocar de provedor.</p>
+          <p className="muted" style={{ fontSize: 11 }}>
+            Armazenadas de forma segura no VS Code. Reaplicadas automaticamente ao trocar de
+            provedor.
+          </p>
           <div className="api-keys-list">
-            {providers.map(p => (
+            {providers.map((p) => (
               <div key={p.id} className="api-key-row">
                 <div className="api-key-info">
                   <span className={`dot ${apiKeys[p.id] ? 'on' : 'off'}`} />
                   <span className="api-key-label">{p.label}</span>
-                  <span className="muted" style={{ fontSize: 10 }}>{p.envVar}</span>
+                  <span className="muted" style={{ fontSize: 10 }}>
+                    {p.envVar}
+                  </span>
                 </div>
                 <div className="api-key-actions">
-                  {showSaved === p.id && (
-                    <span className="saved-indicator">✓ Salvo</span>
-                  )}
+                  {showSaved === p.id && <span className="saved-indicator">✓ Salvo</span>}
                   {editingProvider === p.id ? (
                     <>
                       <input
@@ -771,19 +894,38 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
                         placeholder="Cole a API key…"
                         value={keyValue}
                         onChange={(e) => setKeyValue(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') saveKey(); }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveKey();
+                        }}
                         autoFocus
                       />
-                      <button className="save-btn" onClick={saveKey} disabled={!keyValue.trim()}>Salvar</button>
-                      <button className="cancel-btn" onClick={() => { setEditingProvider(null); setKeyValue(''); }}>✕</button>
+                      <button className="save-btn" onClick={saveKey} disabled={!keyValue.trim()}>
+                        Salvar
+                      </button>
+                      <button
+                        className="cancel-btn"
+                        onClick={() => {
+                          setEditingProvider(null);
+                          setKeyValue('');
+                        }}
+                      >
+                        ✕
+                      </button>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => { setEditingProvider(p.id); setKeyValue(''); }}>
+                      <button
+                        onClick={() => {
+                          setEditingProvider(p.id);
+                          setKeyValue('');
+                        }}
+                      >
                         {apiKeys[p.id] ? '🔄 Atualizar' : '+ Adicionar'}
                       </button>
                       {apiKeys[p.id] && (
-                        <button className="delete-btn" onClick={() => deleteKey(p.id)}>🗑</button>
+                        <button className="delete-btn" onClick={() => deleteKey(p.id)}>
+                          🗑
+                        </button>
                       )}
                     </>
                   )}
@@ -795,19 +937,30 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 
         <div className="config-group">
           <label>URL Base por Provedor</label>
-          <p className="muted" style={{ fontSize: 11 }}>Endpoint da API para cada provedor. Alterado automaticamente ao trocar de modelo.</p>
+          <p className="muted" style={{ fontSize: 11 }}>
+            Endpoint da API para cada provedor. Alterado automaticamente ao trocar de modelo.
+          </p>
           <div className="api-keys-list">
-            {providers.map(p => (
+            {providers.map((p) => (
               <div key={p.id} className="api-key-row">
                 <div className="api-key-info">
                   <span className={`dot ${storedUrls[p.id] ? 'on' : 'off'}`} />
                   <span className="api-key-label">{p.label}</span>
-                  <span className="muted" style={{ fontSize: 10, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{baseUrls[p.id]}</span>
+                  <span
+                    className="muted"
+                    style={{
+                      fontSize: 10,
+                      maxWidth: 200,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {baseUrls[p.id]}
+                  </span>
                 </div>
                 <div className="api-key-actions">
-                  {showUrlSaved === p.id && (
-                    <span className="saved-indicator">✓ Salvo</span>
-                  )}
+                  {showUrlSaved === p.id && <span className="saved-indicator">✓ Salvo</span>}
                   {editingUrlProvider === p.id ? (
                     <>
                       <input
@@ -816,19 +969,42 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
                         placeholder="https://api.example.com/v1"
                         value={urlValue}
                         onChange={(e) => setUrlValue(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') saveBaseUrl(); }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveBaseUrl();
+                        }}
                         autoFocus
                       />
-                      <button className="save-btn" onClick={saveBaseUrl} disabled={!urlValue.trim()}>Salvar</button>
-                      <button className="cancel-btn" onClick={() => { setEditingUrlProvider(null); setUrlValue(''); }}>✕</button>
+                      <button
+                        className="save-btn"
+                        onClick={saveBaseUrl}
+                        disabled={!urlValue.trim()}
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        className="cancel-btn"
+                        onClick={() => {
+                          setEditingUrlProvider(null);
+                          setUrlValue('');
+                        }}
+                      >
+                        ✕
+                      </button>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => { setEditingUrlProvider(p.id); setUrlValue(baseUrls[p.id] || ''); }}>
+                      <button
+                        onClick={() => {
+                          setEditingUrlProvider(p.id);
+                          setUrlValue(baseUrls[p.id] || '');
+                        }}
+                      >
                         {storedUrls[p.id] ? '🔄 Editar' : '✏ Definir'}
                       </button>
                       {storedUrls[p.id] && (
-                        <button className="delete-btn" onClick={() => deleteBaseUrl(p.id)}>🗑</button>
+                        <button className="delete-btn" onClick={() => deleteBaseUrl(p.id)}>
+                          🗑
+                        </button>
                       )}
                     </>
                   )}
@@ -850,38 +1026,220 @@ function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
   }, []);
 
   const servers = s.mcp || [];
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [customName, setCustomName] = useState('');
+  const [customCommand, setCustomCommand] = useState('');
+  const [customArgs, setCustomArgs] = useState('');
 
   function toggle(name: string, enabled: boolean) {
     s.toggleMcp(name, enabled);
+  }
+
+  function toggleDetail(name: string) {
+    const next = { ...expanded, [name]: !expanded[name] };
+    setExpanded(next);
+    // Load tools when expanding
+    if (!s.mcpDetail[name] && next[name]) {
+      s.loadMcpTools(name);
+    }
+  }
+
+  function handleAddCustom() {
+    if (!customName.trim()) return;
+    const args = customArgs.trim() ? customArgs.trim().split(/\s+/) : [];
+    s.addMcpServer({ name: customName.trim(), command: customCommand.trim(), args });
+    setCustomName('');
+    setCustomCommand('');
+    setCustomArgs('');
   }
 
   return (
     <main className="panel-view">
       <div className="panel-header">
         <h3>🔌 Servidores MCP</h3>
-        <p className="muted">Model Context Protocol — servidores de ferramentas externos.</p>
+        <p className="muted">
+          Model Context Protocol — servidores de ferramentas externos.
+          {s.mcpError && (
+            <span
+              className="mcp-error-badge"
+              onClick={() => s.clearMcpError()}
+              title="Clique para limpar"
+            >
+              ⚠ {s.mcpError}
+            </span>
+          )}
+        </p>
       </div>
       <div className="panel-body">
         {servers.length === 0 ? (
-          <p className="muted">Nenhum servidor MCP encontrado.</p>
+          <p className="muted">Nenhum servidor MCP encontrado. Adicione um abaixo ou use o CLI.</p>
         ) : (
-          servers.map((srv: McpInfo) => (
-            <div key={srv.name} className="list-item mcp-item">
-              <div className="mcp-info">
-                <span className={`dot ${srv.enabled ? 'on' : 'off'}`} />
-                <strong>{srv.name}</strong>
-                <span className="muted">· {srv.transport}</span>
+          servers.map((srv: McpInfo) => {
+            const detail: McpServerDetail | undefined = s.mcpDetail[srv.name];
+            const isExpanded = !!expanded[srv.name];
+            return (
+              <div key={srv.name} className="mcp-card">
+                <div className="mcp-item">
+                  <div className="mcp-info">
+                    <span className={`dot ${srv.enabled ? 'on' : 'off'}`} />
+                    <strong>{srv.name}</strong>
+                    <span className="muted">· {srv.transport}</span>
+                    {detail && (
+                      <span className={`mcp-status-badge ${detail.status}`}>
+                        {detail.status === 'connected'
+                          ? '✓'
+                          : detail.status === 'error'
+                            ? '✗'
+                            : '?'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mcp-actions">
+                    <button
+                      className="icon-btn"
+                      onClick={() => toggleDetail(srv.name)}
+                      title={isExpanded ? 'Fechar detalhes' : 'Detalhes'}
+                    >
+                      {isExpanded ? '▲' : '▼'}
+                    </button>
+                    <button
+                      className="icon-btn"
+                      onClick={() => s.testMcpConnection(srv.name)}
+                      title="Testar conexão"
+                    >
+                      🔍
+                    </button>
+                    <button
+                      className="icon-btn danger"
+                      onClick={() => {
+                        if (confirm(`Remover servidor ${srv.name}?`)) s.removeMcp(srv.name);
+                      }}
+                      title="Remover servidor"
+                    >
+                      🗑
+                    </button>
+                    <button
+                      className={`toggle-btn ${srv.enabled ? 'on' : ''}`}
+                      onClick={() => toggle(srv.name, !srv.enabled)}
+                      title={srv.enabled ? 'Desativar' : 'Ativar'}
+                    >
+                      {srv.enabled ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                </div>
+                {isExpanded && (
+                  <div className="mcp-detail">
+                    {detail ? (
+                      <>
+                        <div className="mcp-detail-row">
+                          <span className="muted">Status:</span>
+                          <span className={`mcp-status-badge ${detail.status}`}>
+                            {detail.status}
+                          </span>
+                        </div>
+                        {detail.error && (
+                          <div className="mcp-detail-row">
+                            <span className="muted">Erro:</span>
+                            <span className="mcp-error-text">{detail.error}</span>
+                          </div>
+                        )}
+                        <div className="mcp-detail-row">
+                          <span className="muted">Ferramentas ({detail.tools.length}):</span>
+                        </div>
+                        {detail.tools.length > 0 ? (
+                          <div className="mcp-tools-list">
+                            {detail.tools.map((tool) => (
+                              <div key={tool.name} className="mcp-tool-item">
+                                <span className="mcp-tool-name">{tool.name}</span>
+                                <span className="muted">{tool.description}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="muted">
+                            Nenhuma ferramenta encontrada ou servidor não respondeu.
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="muted">
+                        Carregando detalhes...{' '}
+                        <button className="icon-btn" onClick={() => s.loadMcpTools(srv.name)}>
+                          🔄
+                        </button>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
+            );
+          })
+        )}
+
+        <div className="mcp-actions-bar">
+          <button onClick={() => s.loadMcp()} className="action-btn">
+            🔄 Recarregar
+          </button>
+          <button onClick={() => s.openMcpInstallForm('custom')} className="action-btn primary">
+            ➕ Adicionar Servidor
+          </button>
+        </div>
+
+        {s.installForm.open && s.installForm.type === 'custom' && (
+          <div className="mcp-install-form">
+            <h4>Adicionar Servidor MCP Customizado</h4>
+            <div className="mcp-form-row">
+              <label>Nome</label>
+              <input
+                type="text"
+                className="mcp-input"
+                placeholder="ex: my-server"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+              />
+            </div>
+            <div className="mcp-form-row">
+              <label>Comando</label>
+              <input
+                type="text"
+                className="mcp-input"
+                placeholder="ex: npx, node, python"
+                value={customCommand}
+                onChange={(e) => setCustomCommand(e.target.value)}
+              />
+            </div>
+            <div className="mcp-form-row">
+              <label>Argumentos</label>
+              <input
+                type="text"
+                className="mcp-input"
+                placeholder="ex: -m my-server (separados por espaço)"
+                value={customArgs}
+                onChange={(e) => setCustomArgs(e.target.value)}
+              />
+            </div>
+            <div className="mcp-form-actions">
+              <button onClick={() => s.closeMcpInstallForm()} className="action-btn">
+                Cancelar
+              </button>
               <button
-                className={`toggle-btn ${srv.enabled ? 'on' : ''}`}
-                onClick={() => toggle(srv.name, !srv.enabled)}
-                title={srv.enabled ? 'Desativar' : 'Ativar'}>
-                {srv.enabled ? 'ON' : 'OFF'}
+                onClick={handleAddCustom}
+                className="action-btn primary"
+                disabled={!customName.trim() || !customCommand.trim()}
+              >
+                ✓ Adicionar
               </button>
             </div>
-          ))
+          </div>
         )}
-        <button onClick={() => s.loadMcp()} style={{ marginTop: 8 }}>🔄 Recarregar</button>
+
+        <div className="mcp-footer-info">
+          <p className="muted">
+            💡 Dica: Use <code>hermes mcp list</code> no terminal para gerenciar servidores.
+            Configure servidores MCP adicionais em <code>hermes-agent.mcpServers</code> nas
+            configurações do VS Code.
+          </p>
+        </div>
       </div>
     </main>
   );
@@ -899,17 +1257,22 @@ function TweaksPanel({ s }: { s: ReturnType<typeof useStore> }) {
       <div className="panel-body">
         <div className="config-group">
           <label>Auto-approve</label>
-          <p className="muted">Quando ativado, o Hermes executa ferramentas sem pedir confirmação.</p>
+          <p className="muted">
+            Quando ativado, o Hermes executa ferramentas sem pedir confirmação.
+          </p>
           <button
             className={s.autoApprove ? 'on' : ''}
-            onClick={() => vscode.postMessage({ type: 'toggle-auto-approve' })}>
+            onClick={() => vscode.postMessage({ type: 'toggle-auto-approve' })}
+          >
             {s.autoApprove ? '✓ Ativado' : '◯ Desativado'}
           </button>
         </div>
         <div className="config-group">
           <label>Cache</label>
           <p className="muted">Cache de respostas e resultados de ferramentas.</p>
-          <button onClick={() => vscode.postMessage({ type: 'clear-cache' })}>🗑 Limpar cache</button>
+          <button onClick={() => vscode.postMessage({ type: 'clear-cache' })}>
+            🗑 Limpar cache
+          </button>
         </div>
         <div className="config-group">
           <label>Logs</label>

@@ -103,7 +103,10 @@ export class ChatPanelProvider extends BaseWebviewProvider {
           content.push({ type: 'image', data: img.data, mimeType: img.mimeType });
         }
         for (const res of msg.resources ?? []) {
-          content.push({ type: 'resource', resource: { uri: res.uri, mimeType: res.mimeType, text: res.text } });
+          content.push({
+            type: 'resource',
+            resource: { uri: res.uri, mimeType: res.mimeType, text: res.text },
+          });
         }
         try {
           // Auto-create a session on first prompt so users don't get
@@ -165,6 +168,84 @@ export class ChatPanelProvider extends BaseWebviewProvider {
         }
         break;
       }
+      case 'install-mcp': {
+        const det = await hermesDetector.detect();
+        if (det.path && msg.name) {
+          try {
+            await mcpService.install(det.path, msg.name);
+            this.postMessage({ type: 'mcp-installed', name: msg.name });
+          } catch (e) {
+            this.postMessage({
+              type: 'mcp-error',
+              message: `Falha ao instalar ${msg.name}: ${(e as Error).message}`,
+            });
+          }
+        }
+        break;
+      }
+      case 'remove-mcp': {
+        const det = await hermesDetector.detect();
+        if (det.path && msg.name) {
+          try {
+            await mcpService.remove(det.path, msg.name);
+            this.postMessage({ type: 'mcp-removed', name: msg.name });
+          } catch (e) {
+            this.postMessage({
+              type: 'mcp-error',
+              message: `Falha ao remover ${msg.name}: ${(e as Error).message}`,
+            });
+          }
+        }
+        break;
+      }
+      case 'add-mcp': {
+        const det = await hermesDetector.detect();
+        if (det.path && msg.config) {
+          try {
+            await mcpService.add(det.path, msg.config.name, msg.config);
+            this.postMessage({ type: 'mcp-installed', name: msg.config.name });
+          } catch (e) {
+            this.postMessage({
+              type: 'mcp-error',
+              message: `Falha ao adicionar servidor: ${(e as Error).message}`,
+            });
+          }
+        }
+        break;
+      }
+      case 'test-mcp': {
+        const det = await hermesDetector.detect();
+        if (det.path && msg.name) {
+          const result = await mcpService.testConnection(det.path, msg.name);
+          this.postMessage({
+            type: 'mcp-tools',
+            serverName: msg.name,
+            detail: {
+              name: msg.name,
+              tools: result.tools,
+              status: result.ok ? 'connected' : 'error',
+              error: result.error,
+            },
+          });
+        }
+        break;
+      }
+      case 'load-mcp-tools': {
+        const det = await hermesDetector.detect();
+        if (det.path && msg.name) {
+          const tools = await mcpService.getTools(det.path, msg.name);
+          this.postMessage({
+            type: 'mcp-tools',
+            serverName: msg.name,
+            detail: {
+              name: msg.name,
+              tools,
+              status: tools.length > 0 ? 'connected' : 'disconnected',
+            },
+          });
+        }
+        break;
+      }
       case 'load-agents': {
         const agents = await agentsService.list();
         this.postMessage({ type: 'agent-list', agents });
@@ -188,7 +269,10 @@ export class ChatPanelProvider extends BaseWebviewProvider {
       case 'set-model': {
         const det = await hermesDetector.detect();
         if (!det.path) {
-          this.postMessage({ type: 'error', message: 'Hermes binary not found. Run the setup wizard.' });
+          this.postMessage({
+            type: 'error',
+            message: 'Hermes binary not found. Run the setup wizard.',
+          });
           return;
         }
         const provider = String(msg.provider ?? '').trim();
@@ -250,10 +334,16 @@ export class ChatPanelProvider extends BaseWebviewProvider {
         try {
           const detected = await hermesDetector.detect();
           if (!detected.found || !detected.path) {
-            this.postMessage({ type: 'error', message: 'Hermes binary not found. Run the setup wizard.' });
+            this.postMessage({
+              type: 'error',
+              message: 'Hermes binary not found. Run the setup wizard.',
+            });
             return;
           }
-          this.postMessage({ type: 'acp-status', payload: { connected: false, error: 'connecting…' } });
+          this.postMessage({
+            type: 'acp-status',
+            payload: { connected: false, error: 'connecting…' },
+          });
           await acpManager.start(detected);
           this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
         } catch (e) {
@@ -275,7 +365,11 @@ export class ChatPanelProvider extends BaseWebviewProvider {
       case 'open-config-file': {
         const det = await hermesDetector.detect();
         if (det.path) {
-          const configPath = require('node:path').join(require('node:os').homedir(), '.hermes', 'config.json');
+          const configPath = require('node:path').join(
+            require('node:os').homedir(),
+            '.hermes',
+            'config.json',
+          );
           const uri = vscode.Uri.file(configPath);
           await vscode.window.showTextDocument(uri, { preview: false });
         }
@@ -284,7 +378,11 @@ export class ChatPanelProvider extends BaseWebviewProvider {
       case 'save-config': {
         const det = await hermesDetector.detect();
         if (det.path) {
-          const configPath = require('node:path').join(require('node:os').homedir(), '.hermes', 'config.json');
+          const configPath = require('node:path').join(
+            require('node:os').homedir(),
+            '.hermes',
+            'config.json',
+          );
           await require('node:fs/promises').writeFile(configPath, msg.text ?? '', 'utf-8');
           this.postMessage({ type: 'info', message: 'Configuração salva' });
         }
@@ -292,7 +390,11 @@ export class ChatPanelProvider extends BaseWebviewProvider {
       }
       case 'get-config': {
         try {
-          const configPath = require('node:path').join(require('node:os').homedir(), '.hermes', 'config.json');
+          const configPath = require('node:path').join(
+            require('node:os').homedir(),
+            '.hermes',
+            'config.json',
+          );
           const text = await require('node:fs/promises').readFile(configPath, 'utf-8');
           this.postMessage({ type: 'config-data', text });
         } catch {
@@ -334,7 +436,7 @@ export class ChatPanelProvider extends BaseWebviewProvider {
       }
       case 'list-api-keys': {
         // Check which providers have keys stored
-        const providers = CATALOG.map(p => p.id);
+        const providers = CATALOG.map((p) => p.id);
         const statuses: Record<string, boolean> = {};
         for (const p of providers) {
           const key = await secretsService.getKey(p);
@@ -377,19 +479,34 @@ export class ChatPanelProvider extends BaseWebviewProvider {
       case 'fetch-provider-models': {
         const provider = String(msg.provider ?? '').trim();
         if (!provider) {
-          this.postMessage({ type: 'provider-models', provider: '', models: [], error: 'provider required' });
+          this.postMessage({
+            type: 'provider-models',
+            provider: '',
+            models: [],
+            error: 'provider required',
+          });
           return;
         }
         try {
           const apiKey = await secretsService.getKey(provider);
           if (!apiKey) {
-            this.postMessage({ type: 'provider-models', provider, models: [], error: 'no API key stored' });
+            this.postMessage({
+              type: 'provider-models',
+              provider,
+              models: [],
+              error: 'no API key stored',
+            });
             return;
           }
           const catalogEntry = CATALOG.find((p) => p.id === provider);
           const baseUrl = configService.getBaseUrl(provider) || catalogEntry?.baseUrl;
           if (!baseUrl) {
-            this.postMessage({ type: 'provider-models', provider, models: [], error: 'no base URL configured' });
+            this.postMessage({
+              type: 'provider-models',
+              provider,
+              models: [],
+              error: 'no base URL configured',
+            });
             return;
           }
           const base = baseUrl.replace(/\/+$/, '');
@@ -400,26 +517,32 @@ export class ChatPanelProvider extends BaseWebviewProvider {
           try {
             const resp = await fetch(`${base}/v1/models`, { headers });
             if (resp.ok) {
-              const data = await resp.json() as any;
+              const data = (await resp.json()) as any;
               models = (data.data ?? []).map((m: any) => ({ id: m.id, label: m.id }));
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
 
           // If /v1/models failed, try /v1/manifest (NIM-specific)
           if (models.length === 0) {
             try {
               const resp = await fetch(`${base}/v1/manifest`, { headers });
               if (resp.ok) {
-                const data = await resp.json() as any;
+                const data = (await resp.json()) as any;
                 const entries = data.models ?? data.artifacts ?? data;
                 if (Array.isArray(entries)) {
-                  models = entries.map((m: any) => ({
-                    id: m.name ?? m.id ?? m.model_name ?? '',
-                    label: m.display_name ?? m.name ?? m.id ?? m.model_name ?? '',
-                  })).filter((m: { id: string }) => m.id);
+                  models = entries
+                    .map((m: any) => ({
+                      id: m.name ?? m.id ?? m.model_name ?? '',
+                      label: m.display_name ?? m.name ?? m.id ?? m.model_name ?? '',
+                    }))
+                    .filter((m: { id: string }) => m.id);
                 }
               }
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
 
           // If still empty, try /v1/metadata
@@ -427,39 +550,47 @@ export class ChatPanelProvider extends BaseWebviewProvider {
             try {
               const resp = await fetch(`${base}/v1/metadata`, { headers });
               if (resp.ok) {
-                const data = await resp.json() as any;
+                const data = (await resp.json()) as any;
                 const entries = data.models ?? data.artifacts ?? [];
                 if (Array.isArray(entries)) {
-                  models = entries.map((m: any) => ({
-                    id: m.name ?? m.id ?? m.model_name ?? '',
-                    label: m.display_name ?? m.name ?? m.id ?? m.model_name ?? '',
-                  })).filter((m: { id: string }) => m.id);
+                  models = entries
+                    .map((m: any) => ({
+                      id: m.name ?? m.id ?? m.model_name ?? '',
+                      label: m.display_name ?? m.name ?? m.id ?? m.model_name ?? '',
+                    }))
+                    .filter((m: { id: string }) => m.id);
                 }
               }
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
 
           // Probe: for NIM, test each catalog model with a dummy request
           if (models.length === 0 && catalogEntry) {
-            const candidates = catalogEntry.models.filter(m => m.id !== '__custom__');
+            const candidates = catalogEntry.models.filter((m) => m.id !== '__custom__');
             const available: Array<{ id: string; label: string }> = [];
-            await Promise.all(candidates.map(async (m) => {
-              try {
-                const resp = await fetch(`${base}/v1/chat/completions`, {
-                  method: 'POST',
-                  headers: { ...headers, 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    model: m.id,
-                    messages: [{ role: 'user', content: 'Hi' }],
-                    max_tokens: 1,
-                  }),
-                  signal: AbortSignal.timeout(5000),
-                });
-                if (resp.ok) {
-                  available.push({ id: m.id, label: m.label });
+            await Promise.all(
+              candidates.map(async (m) => {
+                try {
+                  const resp = await fetch(`${base}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: { ...headers, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      model: m.id,
+                      messages: [{ role: 'user', content: 'Hi' }],
+                      max_tokens: 1,
+                    }),
+                    signal: AbortSignal.timeout(5000),
+                  });
+                  if (resp.ok) {
+                    available.push({ id: m.id, label: m.label });
+                  }
+                } catch {
+                  /* not accessible */
                 }
-              } catch { /* not accessible */ }
-            }));
+              }),
+            );
             models = available;
           }
 

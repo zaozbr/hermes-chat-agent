@@ -5,6 +5,8 @@
 import { acpManager } from '../acp/manager';
 import { logger } from '../utils/logger';
 import { workspaceContext } from './workspaceContext';
+import { mcpService } from './mcpService';
+import { hermesDetector } from './hermesDetector';
 
 export interface SessionInfo {
   sessionId: string;
@@ -30,24 +32,72 @@ interface McpServerStdio {
   args: string[];
   env?: { name: string; value: string }[];
 }
-type McpServerConfig = McpServerStdio | { name: string; type: 'http' | 'sse'; url: string; headers: { name: string; value: string }[] };
+type McpServerConfig =
+  | McpServerStdio
+  | { name: string; type: 'http' | 'sse'; url: string; headers: { name: string; value: string }[] };
 
 class SessionManager {
   private sessions = new Map<string, SessionInfo>();
   private activeId: string | null = null;
+
+  /**
+   * Validate configured MCP servers by testing connection to each.
+   * Logs warnings for servers that fail to respond.
+   */
+  private async validateMcpServers(mcpServers: McpServerConfig[]): Promise<void> {
+    const det = await hermesDetector.detect();
+    if (!det.path || mcpServers.length === 0) return;
+
+    logger.info(`Validating ${mcpServers.length} MCP server(s) for session...`);
+    for (const server of mcpServers) {
+      try {
+        const result = await mcpService.testConnection(det.path, server.name);
+        if (!result.ok) {
+          logger.warn(
+            `MCP server "${server.name}" unreachable: ${result.error ?? 'unknown error'}. Will still be included in session.`,
+          );
+        } else {
+          logger.info(`MCP server "${server.name}" OK (${result.tools.length} tools)`);
+        }
+      } catch (e) {
+        logger.warn(
+          `MCP server "${server.name}" validation failed: ${(e as Error).message}. Will still be included.`,
+        );
+      }
+    }
+  }
 
   async create(opts?: { cwd?: string; mode?: 'code' | 'chat' }): Promise<SessionInfo> {
     const conn = acpManager.connection;
     if (!conn) throw new Error('ACP not connected');
     const ctx = workspaceContext.collect();
     const cwd = opts?.cwd ?? ctx.cwd;
+    // Validate MCP servers before session creation (non-blocking)
+    this.validateMcpServers(ctx.mcpServers as McpServerConfig[]);
     // Pass expanded toolsets to match CLI platform_toolsets.cli behavior
     // hermes-cli toolset may not be recognized by ACP adapter, so expand explicitly
     const cliToolsets = [
-      'browser', 'clarify', 'code_execution', 'computer_use', 'context_engine',
-      'cronjob', 'delegation', 'file', 'image_gen', 'memory', 'messaging',
-      'moa', 'session_search', 'skills', 'terminal', 'todo', 'tts', 'video',
-      'video_gen', 'vision', 'web',
+      'browser',
+      'clarify',
+      'code_execution',
+      'computer_use',
+      'context_engine',
+      'cronjob',
+      'delegation',
+      'file',
+      'image_gen',
+      'memory',
+      'messaging',
+      'moa',
+      'session_search',
+      'skills',
+      'terminal',
+      'todo',
+      'tts',
+      'video',
+      'video_gen',
+      'vision',
+      'web',
     ];
     const resp = await conn.newSession({
       cwd,
@@ -72,11 +122,30 @@ class SessionManager {
     const conn = acpManager.connection;
     if (!conn) throw new Error('ACP not connected');
     const ctx = workspaceContext.collect();
+    // Validate MCP servers before session resume (non-blocking)
+    this.validateMcpServers(ctx.mcpServers as McpServerConfig[]);
     const cliToolsets = [
-      'browser', 'clarify', 'code_execution', 'computer_use', 'context_engine',
-      'cronjob', 'delegation', 'file', 'image_gen', 'memory', 'messaging',
-      'moa', 'session_search', 'skills', 'terminal', 'todo', 'tts', 'video',
-      'video_gen', 'vision', 'web',
+      'browser',
+      'clarify',
+      'code_execution',
+      'computer_use',
+      'context_engine',
+      'cronjob',
+      'delegation',
+      'file',
+      'image_gen',
+      'memory',
+      'messaging',
+      'moa',
+      'session_search',
+      'skills',
+      'terminal',
+      'todo',
+      'tts',
+      'video',
+      'video_gen',
+      'vision',
+      'web',
     ];
     await conn.loadSession({
       sessionId,
@@ -144,7 +213,7 @@ class SessionManager {
   }
 
   getActive(): SessionInfo | null {
-    return this.activeId ? this.sessions.get(this.activeId) ?? null : null;
+    return this.activeId ? (this.sessions.get(this.activeId) ?? null) : null;
   }
 
   setActive(id: string) {

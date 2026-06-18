@@ -1,0 +1,123 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 🚀 Release Automation — Auto-publish VSIX on Tags
+# ─────────────────────────────────────────────────────────────────────────────
+# Ao criar uma tag no formato v* (ex: v0.2.0, v1.0.0), este workflow:
+#   1. Builda a extensão
+#   2. Cria um GitHub Release com changelog automático
+#   3. Anexa o VSIX como artifact do release
+# ─────────────────────────────────────────────────────────────────────────────
+# Uso:
+#   git tag v0.2.0
+#   git push origin v0.2.0
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 🚀 Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for changelog
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run fullcheck
+        run: npm run fullcheck
+        continue-on-error: false
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Package VSIX
+        run: npx vsce package --allow-missing-repository -o vscode-hermes-agent-${{ github.ref_name }}.vsix
+
+      - name: Generate changelog
+        id: changelog
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 2
+            });
+            const previousTag = tags.length > 1 ? tags[1].name : '';
+            const currentTag = context.ref.replace('refs/tags/', '');
+
+            let changelog = `## ${currentTag}\n\n`;
+
+            if (previousTag) {
+              const { data: commits } = await github.rest.repos.compareCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: previousTag,
+                head: currentTag
+              });
+
+              const grouped = { feat: [], fix: [], chore: [], docs: [], refactor: [], test: [], other: [] };
+
+              for (const commit of commits.commits) {
+                const msg = commit.commit.message.split('\n')[0];
+                if (msg.startsWith('feat')) grouped.feat.push(msg);
+                else if (msg.startsWith('fix')) grouped.fix.push(msg);
+                else if (msg.startsWith('chore')) grouped.chore.push(msg);
+                else if (msg.startsWith('docs')) grouped.docs.push(msg);
+                else if (msg.startsWith('refactor')) grouped.refactor.push(msg);
+                else if (msg.startsWith('test')) grouped.test.push(msg);
+                else grouped.other.push(msg);
+              }
+
+              const sections = [
+                ['🚀 Features', grouped.feat],
+                ['🐛 Bug Fixes', grouped.fix],
+                ['📚 Documentation', grouped.docs],
+                ['♻️ Refactors', grouped.refactor],
+                ['🧪 Tests', grouped.test],
+                ['🔧 Chores', grouped.chore],
+                ['📦 Other', grouped.other]
+              ];
+
+              for (const [title, items] of sections) {
+                if (items.length > 0) {
+                  changelog += `### ${title}\n`;
+                  for (const item of items) {
+                    changelog += `- ${item}\n`;
+                  }
+                  changelog += '\n';
+                }
+              }
+            } else {
+              changelog += 'Initial release.\n';
+            }
+
+            core.setOutput('changelog', changelog);
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Hermes Agent ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+          files: |
+            vscode-hermes-agent-${{ github.ref_name }}.vsix
+          generate_release_notes: true
