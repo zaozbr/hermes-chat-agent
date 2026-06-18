@@ -327,7 +327,7 @@
     "esbuild": "^0.23.0",
     "eslint": "^8.57.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.5.3",
+    "typescript": "^6.0.3",
     "vite": "^5.4.0",
     "vitest": "^2.0.5",
     "vsce": "^2.15.0"
