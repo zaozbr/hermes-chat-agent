@@ -110,6 +110,18 @@ export interface AgentProfile {
   color?: string;
 }
 
+/** Novo: modo de chat do Copilot (Ask/Edit/Cascade) */
+export type ChatMode = 'ask' | 'edit' | 'cascade';
+
+/** Resumo de sessão para histórico */
+export interface SessionSummary {
+  id: string;
+  title: string;
+  preview: string;
+  timestamp: number;
+  messageCount: number;
+}
+
 export interface State {
   status: {
     connected: boolean;
@@ -166,6 +178,14 @@ export interface State {
   lastThoughtMessageId: string | null;
   agents: AgentProfile[];
   currentAgent: string;
+  /** Novo: modo de chat (ask/edit/cascade) */
+  chatMode: ChatMode;
+  /** Novo: settings drawer aberto? */
+  settingsDrawerOpen: boolean;
+  /** Novo: sidebar de histórico aberta? */
+  sidebarOpen: boolean;
+  /** Novo: histórico de sessões */
+  chatHistory: SessionSummary[];
 }
 
 const initial: State = {
@@ -216,6 +236,10 @@ const initial: State = {
     { name: 'explore', description: 'Exploração de código', mode: 'primary', color: '#ff9800' },
   ],
   currentAgent: 'build',
+  chatMode: 'ask',
+  settingsDrawerOpen: false,
+  sidebarOpen: false,
+  chatHistory: [],
 };
 
 class Store {
@@ -443,6 +467,15 @@ class Store {
         break;
       case 'yolo':
         this.set((s) => ({ ...s, yolo: !!msg.enabled }));
+        break;
+      case 'chat-history':
+        this.set((s) => ({ ...s, chatHistory: msg.sessions ?? [] }));
+        break;
+      case 'session-deleted':
+        this.set((s) => ({
+          ...s,
+          chatHistory: s.chatHistory.filter((h) => h.id !== msg.sessionId),
+        }));
         break;
     }
   }
@@ -761,6 +794,52 @@ class Store {
   loadAgents() {
     vscode.postMessage({ type: 'load-agents' });
   }
+
+  // ─── Novos métodos para o redesign ──────────────────────────────────
+
+  /** Abre/fecha settings drawer */
+  toggleSettingsDrawer() {
+    this.set((s) => ({ ...s, settingsDrawerOpen: !s.settingsDrawerOpen }));
+  }
+
+  closeSettingsDrawer() {
+    this.set((s) => ({ ...s, settingsDrawerOpen: false }));
+  }
+
+  /** Abre/fecha sidebar de histórico */
+  toggleSidebar() {
+    this.set((s) => ({ ...s, sidebarOpen: !s.sidebarOpen }));
+  }
+
+  closeSidebar() {
+    this.set((s) => ({ ...s, sidebarOpen: false }));
+  }
+
+  /** Muda modo de chat (ask/edit/cascade) */
+  setChatMode(mode: ChatMode) {
+    this.set((s) => {
+      // Mapeia chatMode interno para mode do ACP
+      const acpMode: 'code' | 'chat' = mode === 'ask' ? 'chat' : 'code';
+      return { ...s, chatMode: mode, mode: acpMode };
+    });
+    vscode.postMessage({ type: 'set-mode', mode: mode === 'ask' ? 'chat' : 'code' });
+  }
+
+  /** Carrega histórico de sessões */
+  loadChatHistory() {
+    vscode.postMessage({ type: 'load-chat-history' });
+  }
+
+  /** Muda para sessão do histórico */
+  switchSession(id: string) {
+    vscode.postMessage({ type: 'resume-session', sessionId: id });
+    this.set((s) => ({ ...s, sidebarOpen: false }));
+  }
+
+  /** Deleta sessão */
+  deleteSession(id: string) {
+    vscode.postMessage({ type: 'delete-session', sessionId: id });
+  }
 }
 
 // Auto-ping to prevent "Upstream idle timeout exceeded"
@@ -824,5 +903,13 @@ export function useStore() {
     openConfigFile: store.openConfigFile.bind(store),
     switchAgent: store.switchAgent.bind(store),
     loadAgents: store.loadAgents.bind(store),
+    toggleSettingsDrawer: store.toggleSettingsDrawer.bind(store),
+    closeSettingsDrawer: store.closeSettingsDrawer.bind(store),
+    toggleSidebar: store.toggleSidebar.bind(store),
+    closeSidebar: store.closeSidebar.bind(store),
+    setChatMode: store.setChatMode.bind(store),
+    loadChatHistory: store.loadChatHistory.bind(store),
+    switchSession: store.switchSession.bind(store),
+    deleteSession: store.deleteSession.bind(store),
   });
 }

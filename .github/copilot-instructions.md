@@ -128,7 +128,54 @@ Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
 - Atualize user memory (`/memories/`) com lições e descobertas
 - Atualize repo memory (`/memories/repo/`) se necessário
 - Verifique se `.github/copilot-instructions.md` reflete o estado atual
-- Garanta que o header do `PROGRESS.md` tenha: `> Checkpoint em <data>. Retomar deste ponto. Comando commit! para finalizar.`
+- Garanta que o header do `PROGRESS.md` tenha: `> 🔙 Retomar com: oi!`
+
+---
+
+## 🔙 COMANDO `oi!` — Protocolo de Retomada de Sessão
+
+**Quando o usuário digitar `oi!` no chat, EXECUTE IMEDIATAMENTE este workflow para retomar do checkpoint salvo:**
+
+### Passo 1: Reabsorver Conhecimento (rápido)
+Leia na ordem:
+
+1. **`PROGRESS.md`** (apenas o header) → Identificar checkpoint, tag safepoint, commit, próximo passo
+2. **`AGENTS.md`** → Regras inegociáveis
+3. **`docs/ARCHITECTURE.md`** → Diagrama de componentes (rápido)
+
+### Passo 2: Verificar Ambiente
+Execute rapidamente (não precisa exibir tudo — só confirmar que está OK):
+
+```
+npx vitest run → 8/8 passing?
+```
+
+### Passo 3: Postar Status Box
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║           🔙 SESSÃO RETOMADA — CHECKPOINT ✅               ║
+║                                                              ║
+║  📅  DATA:      <data do checkpoint>                        ║
+║  🏷️  TAG:       <safepoint-xxxx>                            ║
+║  📍  COMMIT:    <hash>                                      ║
+║  🧪  TESTES:    <N>/<N> passando                            ║
+║  🏗️  ÚLTIMA:    <resumo do que foi feito>                   ║
+║                                                              ║
+║  ▶️ PRÓXIMO:     <próximo passo planejado>                   ║
+║  💬 PERGUNTA:   "O que você quer fazer agora?"              ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+### Passo 4: Perguntar
+- Termine com: **"O que você quer fazer agora?"** — e aguarde instruções do usuário.
+
+### Regras
+1. **NÃO** refazer build nem rodar testes completos a menos que o usuário peça
+2. **NÃO** iniciar nenhuma tarefa sem o usuário dizer o que quer
+3. **NÃO** modificar nenhum arquivo — só leitura e apresentação
+4. Se não achar um checkpoint válido, execute o **WORKFLOW AUTOMÁTICO DE INÍCIO DE SESSÃO** (seção acima)
 
 ---
 
