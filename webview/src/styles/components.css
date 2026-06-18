@@ -1477,6 +1477,243 @@
   font-size: 11px;
   cursor: pointer;
 }
+
+/* ─── Registry Browser ──────────────────────────────────────────────────── */
+
+.mcp-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.mcp-section-label .count {
+  font-size: 11px;
+  font-weight: 400;
+  background: var(--bg-3);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+/* Registry section container */
+.mcp-registry-section {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 4px;
+}
+
+/* Search bar */
+.mcp-registry-search {
+  margin-bottom: 10px;
+}
+.mcp-registry-search .mcp-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Registry tabs */
+.mcp-registry-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.mcp-registry-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-2);
+  color: var(--fg);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.mcp-registry-tab:hover {
+  border-color: var(--accent);
+}
+.mcp-registry-tab.active {
+  border-color: var(--accent);
+  background: rgba(76, 175, 80, 0.08);
+}
+.reg-label {
+  font-weight: 600;
+}
+.reg-status {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--bg-3);
+}
+.reg-status.loading {
+  color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+.reg-status.error {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.15);
+}
+.reg-status.count {
+  color: var(--muted);
+}
+
+/* Registry content */
+.mcp-registry-content {
+  min-height: 60px;
+}
+
+/* Loading state */
+.mcp-registry-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  font-size: 18px;
+}
+
+/* Empty / error state */
+.mcp-registry-empty {
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Registry server cards grid */
+.mcp-registry-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.mcp-registry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-2);
+  transition: border-color 0.15s;
+}
+.mcp-registry-card:hover {
+  border-color: var(--accent);
+}
+
+.reg-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reg-card-name {
+  font-size: 13px;
+  color: var(--fg);
+  word-break: break-all;
+}
+
+.mcp-transport-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--bg-3);
+  color: var(--muted);
+}
+.mcp-transport-badge.stdio {
+  background: rgba(76, 175, 80, 0.12);
+  color: #4caf50;
+}
+.mcp-transport-badge.http {
+  background: rgba(33, 150, 243, 0.12);
+  color: #2196f3;
+}
+.mcp-transport-badge.sse {
+  background: rgba(156, 39, 176, 0.12);
+  color: #9c27b0;
+}
+
+.reg-card-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reg-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+.reg-card-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.reg-tag {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--bg-3);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.reg-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+.reg-install-btn {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+
+.reg-card-command {
+  margin-top: 2px;
+}
+.reg-card-command code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-3);
+  padding: 3px 6px;
+  border-radius: 4px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .icon-btn {
   display: inline-flex;
   align-items: center;

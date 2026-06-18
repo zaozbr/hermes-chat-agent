@@ -10,7 +10,7 @@ export default defineConfig({
     environment: 'node',
     root: resolve(__dirname),
     include: ['tests/**/*.{test,spec}.{js,ts}', 'src/**/*.{test,spec}.{js,ts}'],
-    exclude: ['node_modules', 'dist', 'dist-webview', '**/*.mjs'],
+    exclude: ['node_modules', 'dist', 'dist-webview', 'tests/e2e', '**/*.mjs'],
     setupFiles: ['./tests/setup.ts'],
 
     // ─── Timeouts ────────────────────────────────────────

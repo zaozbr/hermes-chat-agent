@@ -1023,13 +1023,27 @@ function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
   useEffect(() => {
     s.loadMcp();
+    s.loadMcpRegistries();
   }, []);
 
   const servers = s.mcp || [];
+  const registries = s.mcpRegistries || [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [customName, setCustomName] = useState('');
   const [customCommand, setCustomCommand] = useState('');
   const [customArgs, setCustomArgs] = useState('');
+  const [showRegistry, setShowRegistry] = useState(true);
+
+  // Load servers from all registries on mount
+  useEffect(() => {
+    if (registries.length > 0) {
+      registries.forEach((r) => {
+        if (r.enabled && !s.mcpRegistryServers[r.id]) {
+          s.fetchRegistryServers(r.id);
+        }
+      });
+    }
+  }, [registries.length]);
 
   function toggle(name: string, enabled: boolean) {
     s.toggleMcp(name, enabled);
@@ -1038,7 +1052,6 @@ function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
   function toggleDetail(name: string) {
     const next = { ...expanded, [name]: !expanded[name] };
     setExpanded(next);
-    // Load tools when expanding
     if (!s.mcpDetail[name] && next[name]) {
       s.loadMcpTools(name);
     }
@@ -1051,6 +1064,21 @@ function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
     setCustomName('');
     setCustomCommand('');
     setCustomArgs('');
+  }
+
+  function handleInstallFromRegistry(server: any) {
+    s.installMcpFromRegistry(server);
+  }
+
+  // Filter servers from registries by search
+  const searchQuery = s.mcpRegistrySearch?.toLowerCase() ?? '';
+  function filterServers(servers: any[]): any[] {
+    if (!searchQuery) return servers;
+    return servers.filter(
+      (sv) =>
+        sv.name.toLowerCase().includes(searchQuery) ||
+        sv.description?.toLowerCase().includes(searchQuery),
+    );
   }
 
   return (
@@ -1071,8 +1099,15 @@ function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
         </p>
       </div>
       <div className="panel-body">
+        {/* ─── Installed Servers ───────────────────────────────────────── */}
+        <div className="mcp-section-label">
+          <span>📦 Servidores Instalados</span>
+          <span className="muted count">{servers.length}</span>
+        </div>
         {servers.length === 0 ? (
-          <p className="muted">Nenhum servidor MCP encontrado. Adicione um abaixo ou use o CLI.</p>
+          <p className="muted">
+            Nenhum servidor MCP encontrado. Use o registry abaixo para adicionar.
+          </p>
         ) : (
           servers.map((srv: McpInfo) => {
             const detail: McpServerDetail | undefined = s.mcpDetail[srv.name];
@@ -1183,6 +1218,12 @@ function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
           <button onClick={() => s.openMcpInstallForm('custom')} className="action-btn primary">
             ➕ Adicionar Servidor
           </button>
+          <button
+            onClick={() => setShowRegistry(!showRegistry)}
+            className={`action-btn ${showRegistry ? '' : ''}`}
+          >
+            {showRegistry ? '▲ Ocultar Registry' : '▼ Mostrar Registry'}
+          </button>
         </div>
 
         {s.installForm.open && s.installForm.type === 'custom' && (
@@ -1230,6 +1271,181 @@ function McpPanel({ s }: { s: ReturnType<typeof useStore> }) {
                 ✓ Adicionar
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ─── Registry Browser ────────────────────────────────────────── */}
+        {showRegistry && (
+          <div className="mcp-registry-section">
+            <div className="mcp-section-label">
+              <span>🔍 Registry Browser</span>
+              <span className="muted">Descubra servidores MCP de múltiplos registries</span>
+            </div>
+
+            {/* Search bar */}
+            <div className="mcp-registry-search">
+              <input
+                type="text"
+                className="mcp-input"
+                placeholder="Buscar servidores por nome ou descrição..."
+                value={s.mcpRegistrySearch}
+                onChange={(e) => s.setMcpRegistrySearch(e.target.value)}
+              />
+            </div>
+
+            {/* Registry tabs */}
+            {registries.length > 0 && (
+              <div className="mcp-registry-tabs">
+                {registries.map((reg) => {
+                  const loading = s.mcpRegistryLoading[reg.id];
+                  const error = s.mcpRegistryError[reg.id];
+                  const servers_list = s.mcpRegistryServers[reg.id] ?? [];
+                  const isActive =
+                    s.mcpActiveRegistry === reg.id ||
+                    (!s.mcpActiveRegistry && registries[0]?.id === reg.id);
+                  return (
+                    <div
+                      key={reg.id}
+                      className={`mcp-registry-tab ${isActive ? 'active' : ''}`}
+                      onClick={() => {
+                        s.setMcpActiveRegistry(reg.id);
+                        if (!s.mcpRegistryServers[reg.id]) {
+                          s.fetchRegistryServers(reg.id);
+                        }
+                      }}
+                    >
+                      <span className="reg-label">{reg.label}</span>
+                      {loading ? (
+                        <span className="reg-status loading">⟳</span>
+                      ) : error ? (
+                        <span className="reg-status error" title={error}>
+                          ⚠
+                        </span>
+                      ) : (
+                        <span className="reg-status count">{servers_list.length}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Active registry content */}
+            {(() => {
+              const activeReg = s.mcpActiveRegistry
+                ? registries.find((r) => r.id === s.mcpActiveRegistry)
+                : registries[0];
+              if (!activeReg) return null;
+
+              const loading = s.mcpRegistryLoading[activeReg.id];
+              const error = s.mcpRegistryError[activeReg.id];
+              let servers_list = s.mcpRegistryServers[activeReg.id] ?? [];
+              servers_list = filterServers(servers_list);
+
+              return (
+                <div className="mcp-registry-content">
+                  {loading && servers_list.length === 0 && (
+                    <div className="mcp-registry-loading">
+                      <span className="loading-spinner">⟳</span>
+                      <span>Carregando servidores de {activeReg.label}...</span>
+                    </div>
+                  )}
+
+                  {error && servers_list.length === 0 && (
+                    <div className="mcp-registry-empty">
+                      <p className="muted">⚠ Erro ao carregar: {error}</p>
+                      <button
+                        className="action-btn"
+                        onClick={() => s.fetchRegistryServers(activeReg.id)}
+                      >
+                        🔄 Tentar novamente
+                      </button>
+                    </div>
+                  )}
+
+                  {!loading && !error && servers_list.length === 0 && (
+                    <div className="mcp-registry-empty">
+                      <p className="muted">
+                        Nenhum servidor encontrado em {activeReg.label}.
+                        {searchQuery && ' Tente um termo de busca diferente.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {servers_list.length > 0 && (
+                    <div className="mcp-registry-grid">
+                      {servers_list.map((sv: any) => (
+                        <div key={sv.id} className="mcp-registry-card">
+                          <div className="reg-card-header">
+                            <strong className="reg-card-name">{sv.name}</strong>
+                            <span className={`mcp-transport-badge ${sv.transport}`}>
+                              {sv.transport}
+                            </span>
+                          </div>
+                          <p className="reg-card-desc">{sv.description || 'Sem descrição'}</p>
+                          <div className="reg-card-meta">
+                            {sv.toolCount != null && (
+                              <span className="muted">{sv.toolCount} ferramentas</span>
+                            )}
+                            {sv.tags && sv.tags.length > 0 && (
+                              <span className="reg-card-tags">
+                                {sv.tags.slice(0, 3).map((t: string) => (
+                                  <span key={t} className="reg-tag">
+                                    {t}
+                                  </span>
+                                ))}
+                              </span>
+                            )}
+                          </div>
+                          <div className="reg-card-actions">
+                            <button
+                              className="action-btn primary reg-install-btn"
+                              onClick={() => handleInstallFromRegistry(sv)}
+                              title={
+                                sv.command ? `Instalar via ${sv.command}` : 'Instalar servidor'
+                              }
+                            >
+                              📥 Instalar
+                            </button>
+                            {sv.homepage && (
+                              <a
+                                href={sv.homepage}
+                                title="Abrir página do servidor"
+                                className="action-btn"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                🌐
+                              </a>
+                            )}
+                          </div>
+                          {sv.command && (
+                            <div className="reg-card-command">
+                              <code>
+                                {sv.command}
+                                {sv.args ? ' ' + sv.args.join(' ') : ''}
+                              </code>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reload button for registry */}
+                  {!loading && servers_list.length > 0 && (
+                    <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                      <button
+                        className="action-btn"
+                        onClick={() => s.fetchRegistryServers(activeReg.id)}
+                      >
+                        🔄 Recarregar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 

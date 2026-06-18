@@ -16,5 +16,8 @@ skills/
 skills-lock.json
 PROGRESS.md
 
+# Playwright test reports
+playwright-report/
+
 # Screenshots
 Captura de tela *.png

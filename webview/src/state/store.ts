@@ -69,6 +69,32 @@ export interface McpInstallForm {
   customUrl?: string;
 }
 
+export interface McpRegistrySource {
+  id: string;
+  label: string;
+  description: string;
+  url: string;
+  serversUrl: string;
+  type: 'mcp-registry' | 'smithery' | 'github-awesome' | 'custom';
+  enabled: boolean;
+}
+
+export interface RegistryServer {
+  id: string;
+  name: string;
+  description: string;
+  transport: 'stdio' | 'http' | 'sse' | 'unknown';
+  command?: string;
+  args?: string[];
+  url?: string;
+  installType: 'command' | 'url';
+  source: string;
+  sourceLabel: string;
+  toolCount?: number;
+  tags?: string[];
+  homepage?: string;
+}
+
 export interface CatalogProvider {
   id: string;
   label: string;
@@ -128,6 +154,12 @@ export interface State {
   modelStatus: { configured: boolean; provider: string | null; model: string | null };
   modelValidation: { ok: boolean; detail: string } | null;
   previousModel: { provider: string | null; model: string | null } | null;
+  mcpRegistries: McpRegistrySource[];
+  mcpRegistryServers: Record<string, RegistryServer[]>;
+  mcpRegistryLoading: Record<string, boolean>;
+  mcpRegistryError: Record<string, string | null>;
+  mcpRegistrySearch: string;
+  mcpActiveRegistry: string | null;
   autoApprove: boolean;
   yolo: boolean;
   lastAgentMessageId: string | null;
@@ -162,6 +194,12 @@ const initial: State = {
   modelStatus: { configured: false, provider: null, model: null },
   modelValidation: null,
   previousModel: null,
+  mcpRegistries: [],
+  mcpRegistryServers: {},
+  mcpRegistryLoading: {},
+  mcpRegistryError: {},
+  mcpRegistrySearch: '',
+  mcpActiveRegistry: null,
   autoApprove: true,
   yolo: false,
   lastAgentMessageId: null,
@@ -279,6 +317,35 @@ class Store {
         break;
       case 'mcp-error':
         this.set((s) => ({ ...s, mcpError: msg.message ?? null }));
+        break;
+      case 'mcp-registries':
+        this.set((s) => ({ ...s, mcpRegistries: msg.registries ?? [] }));
+        break;
+      case 'mcp-registry-servers':
+        this.set((s) => ({
+          ...s,
+          mcpRegistryServers: {
+            ...s.mcpRegistryServers,
+            [msg.source]: msg.servers ?? [],
+          },
+          mcpRegistryLoading: {
+            ...s.mcpRegistryLoading,
+            [msg.source]: false,
+          },
+          mcpRegistryError: {
+            ...s.mcpRegistryError,
+            [msg.source]: msg.error ?? null,
+          },
+        }));
+        break;
+      case 'mcp-registry-loading':
+        this.set((s) => ({
+          ...s,
+          mcpRegistryLoading: {
+            ...s.mcpRegistryLoading,
+            [msg.source]: msg.loading,
+          },
+        }));
         break;
       case 'error':
         this.set((s) => ({ ...s, error: msg.message, inProgress: false }));
@@ -635,6 +702,31 @@ class Store {
     this.set((s) => ({ ...s, mcpError: null }));
   }
 
+  loadMcpRegistries() {
+    vscode.postMessage({ type: 'load-mcp-registries' });
+  }
+
+  fetchRegistryServers(sourceId: string) {
+    this.set((s) => ({
+      ...s,
+      mcpRegistryLoading: { ...s.mcpRegistryLoading, [sourceId]: true },
+      mcpRegistryError: { ...s.mcpRegistryError, [sourceId]: null },
+    }));
+    vscode.postMessage({ type: 'fetch-registry-servers', sourceId });
+  }
+
+  installMcpFromRegistry(server: RegistryServer) {
+    vscode.postMessage({ type: 'install-mcp-from-registry', server });
+  }
+
+  setMcpRegistrySearch(query: string) {
+    this.set((s) => ({ ...s, mcpRegistrySearch: query }));
+  }
+
+  setMcpActiveRegistry(registryId: string | null) {
+    this.set((s) => ({ ...s, mcpActiveRegistry: registryId }));
+  }
+
   setModel(provider: string, model: string, customModel?: string) {
     vscode.postMessage({ type: 'set-model', provider, model, customModel });
   }
@@ -720,6 +812,11 @@ export function useStore() {
     openMcpInstallForm: store.openMcpInstallForm.bind(store),
     closeMcpInstallForm: store.closeMcpInstallForm.bind(store),
     clearMcpError: store.clearMcpError.bind(store),
+    loadMcpRegistries: store.loadMcpRegistries.bind(store),
+    fetchRegistryServers: store.fetchRegistryServers.bind(store),
+    installMcpFromRegistry: store.installMcpFromRegistry.bind(store),
+    setMcpRegistrySearch: store.setMcpRegistrySearch.bind(store),
+    setMcpActiveRegistry: store.setMcpActiveRegistry.bind(store),
     setModel: store.setModel.bind(store),
     revertModel: store.revertModel.bind(store),
     getCatalog: store.getCatalog.bind(store),

@@ -34,9 +34,19 @@ export default defineConfig({
   /* Output dir para screenshots/videos */
   outputDir: 'test-results/e2e/',
 
+  /* ─── Servidor HTTP local para servir dist-webview/ ───
+   * Necessário porque Chrome bloqueia ES modules (type="module") em file://
+   */
+  webServer: {
+    command: `node "${path.resolve(__dirname, 'scripts/serve-e2e.cjs')}"`,
+    port: 9876,
+    reuseExistingServer: !process.env.CI,
+    timeout: 10_000,
+  },
+
   use: {
-    /* Base URL para testes do webview */
-    baseURL: `file://${path.resolve(__dirname, 'dist-webview')}/index.html`,
+    /* Base URL para testes do webview (HTTP, não file:// — ES modules!) */
+    baseURL: 'http://127.0.0.1:9876',
     /* Rastrear em caso de falha */
     trace: process.env.CI ? 'retain-on-failure' : 'on-first-retry',
     /* Screenshot em falha */

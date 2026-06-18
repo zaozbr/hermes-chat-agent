@@ -5,6 +5,7 @@ import { acpManager } from '../acp/manager';
 import { logger } from '../utils/logger';
 import { skillsService } from '../services/skillsService';
 import { mcpService } from '../services/mcpService';
+import { mcpRegistryService } from '../services/mcpRegistryService';
 import { agentsService } from '../services/agentsService';
 import { hermesDetector } from '../services/hermesDetector';
 import { hermesInstaller } from '../services/hermesInstaller';
@@ -242,6 +243,61 @@ export class ChatPanelProvider extends BaseWebviewProvider {
               tools,
               status: tools.length > 0 ? 'connected' : 'disconnected',
             },
+          });
+        }
+        break;
+      }
+      case 'load-mcp-registries': {
+        const registries = mcpRegistryService.getRegistries();
+        this.postMessage({ type: 'mcp-registries', registries });
+        break;
+      }
+      case 'fetch-registry-servers': {
+        const sourceId: string = msg.sourceId;
+        const registries = mcpRegistryService.getRegistries();
+        const source = registries.find((r) => r.id === sourceId);
+        if (!source) {
+          this.postMessage({
+            type: 'mcp-registry-servers',
+            source: sourceId,
+            servers: [],
+            error: `Registry "${sourceId}" not found.`,
+          });
+          break;
+        }
+        // Fire loading state
+        this.postMessage({ type: 'mcp-registry-loading', source: sourceId, loading: true });
+        const result = await mcpRegistryService.fetchServers(source);
+        this.postMessage({
+          type: 'mcp-registry-servers',
+          source: result.source,
+          servers: result.servers,
+          error: result.error ?? null,
+        });
+        break;
+      }
+      case 'install-mcp-from-registry': {
+        const det = await hermesDetector.detect();
+        if (!det.path) {
+          this.postMessage({
+            type: 'mcp-error',
+            message: 'Hermes CLI não encontrado. Instale o Hermes primeiro.',
+          });
+          break;
+        }
+        const server = msg.server;
+        if (!server?.name) {
+          this.postMessage({ type: 'mcp-error', message: 'Servidor inválido.' });
+          break;
+        }
+        try {
+          const config = mcpRegistryService.buildInstallConfig(server);
+          await mcpService.add(det.path, server.name, config);
+          this.postMessage({ type: 'mcp-installed', name: server.name });
+        } catch (e) {
+          this.postMessage({
+            type: 'mcp-error',
+            message: `Falha ao instalar ${server.name}: ${(e as Error).message}`,
           });
         }
         break;
