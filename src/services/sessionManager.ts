@@ -212,6 +212,14 @@ class SessionManager {
     if (s) s.title = title;
   }
 
+  async delete(sessionId: string): Promise<void> {
+    this.sessions.delete(sessionId);
+    if (this.activeId === sessionId) {
+      this.activeId = null;
+      acpManager.setCurrentSession(null);
+    }
+  }
+
   getActive(): SessionInfo | null {
     return this.activeId ? (this.sessions.get(this.activeId) ?? null) : null;
   }

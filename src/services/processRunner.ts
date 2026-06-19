@@ -56,7 +56,11 @@ export class ProcessRunner {
       p.kill('SIGTERM');
       setTimeout(() => {
         if (this.running.has(id)) {
-          try { p.kill('SIGKILL'); } catch { /* ignore */ }
+          try {
+            p.kill('SIGKILL');
+          } catch {
+            /* ignore */
+          }
         }
       }, KILL_GRACE_MS);
     } catch {
@@ -116,11 +120,19 @@ export class ProcessRunner {
       timeoutHandle = setTimeout(() => {
         timedOut = true;
         options.onTimeout?.();
-        try { child.kill('SIGTERM'); } catch { /* ignore */ }
+        try {
+          child.kill('SIGTERM');
+        } catch {
+          /* ignore */
+        }
         // Force-kill after grace period
         setTimeout(() => {
           if (this.running.has(id)) {
-            try { child.kill('SIGKILL'); } catch { /* ignore */ }
+            try {
+              child.kill('SIGKILL');
+            } catch {
+              /* ignore */
+            }
           }
         }, KILL_GRACE_MS);
       }, options.timeoutMs);
@@ -128,17 +140,25 @@ export class ProcessRunner {
 
     const cancel = () => {
       cancelled = true;
-      try { child.kill('SIGTERM'); } catch { /* ignore */ }
+      try {
+        child.kill('SIGTERM');
+      } catch {
+        /* ignore */
+      }
       setTimeout(() => {
         if (this.running.has(id)) {
-          try { child.kill('SIGKILL'); } catch { /* ignore */ }
+          try {
+            child.kill('SIGKILL');
+          } catch {
+            /* ignore */
+          }
         }
       }, KILL_GRACE_MS);
     };
     options.registerCancel?.(cancel);
 
     const exitCode: number | null = await new Promise((resolveExit) => {
-      child.on('exit', (code, signal) => {
+      child.on('exit', (code, _signal) => {
         resolveExit(code);
       });
       child.on('error', (err) => {

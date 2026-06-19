@@ -7,7 +7,7 @@ import { acpManager } from './acp/manager';
 import { hermesDetector } from './services/hermesDetector';
 import { secretsService } from './services/secretsService';
 import { configService } from './services/configService';
-import { hermesEnvService, HERMES_ENV_MAP } from './services/hermesEnvService';
+import { hermesEnvService } from './services/hermesEnvService';
 
 let chatProvider: ChatPanelProvider;
 

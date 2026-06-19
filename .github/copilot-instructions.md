@@ -75,18 +75,40 @@ npx vsce package --allow-missing-repository -o vscode-hermes-agent-0.1.0.vsix
 
 NUNCA pular o uninstall. VS Code cacheia .vsix agressivamente.
 
-### REGRA #2: QA antes de entregar
+### REGRA #2: QA antes de entregar (🧪 testes profundos!)
 
 1. Trace o fluxo completo (webview → store → extension → service → resposta)
 2. Verifique contratos (nomes de mensagens, campos, tipos)
 3. Teste edge cases (vazio, nulo, erro, timeout)
-4. Build DEVE passar (`node scripts/build.mjs --mode production`)
-5. Testes DEVEM passar (`npx vitest run`)
-6. Documente o teste (pass/fail) antes de entregar
+4. **Expanda os testes existentes** antes de declarar pronto (ver REGRA #4)
+5. Build DEVE passar (`node scripts/build.mjs --mode production`)
+6. Testes DEVEM passar (`npx vitest run`)
+7. E2E DEVEM passar (`npx playwright test`)
+8. Documente: quantos testes adicionados, cobertura, pass/fail
 
 ### REGRA #3: Sempre absorver regras
 
 Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
+
+### REGRA #4: 🧪 Expandir testes a CADA alteração — NUNCA testar raso
+
+**Toda vez que alterar ou adicionar código, os testes DEVEM ser expandidos.**
+
+| Tipo | Mínimo de testes novos |
+|------|----------------------|
+| Novo componente | 3+ (render, estados, interações) |
+| Nova função/método | 3+ (happy path, edge cases, erro) |
+| Nova store handler/message | 2+ (payload válido, payload edge) |
+| Correção de bug | 1+ (teste que comprova a correção) |
+| Refatoração | 0 (mas garantir que existentes passam) |
+
+**NUNCA aceitar estes como "teste suficiente":**
+- ❌ "O componente existe" sem testar estados
+- ❌ "A função retorna algo" sem testar edge cases
+- ❌ Apenas happy path sem testar erros
+- ❌ Testes que não rodam de forma confiável (flaky)
+
+**Consultar `TESTING_GUIDELINES.md`** para templates, padrões e métricas.
 
 ---
 
@@ -96,6 +118,7 @@ Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
 
 ### Passo 1: Documentar
 - Capture tudo da sessão: o que foi feito, lições aprendidas, conhecimento gerado
+- **Registre a expansão de testes**: quantos testes foram adicionados, em quais arquivos, cobertura
 - Atualize `PROGRESS.md` com nova seção (data + resumo)
 - Salve descobertas importantes na memória (`/memories/`)
 

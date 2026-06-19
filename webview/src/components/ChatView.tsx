@@ -82,9 +82,3 @@ export function ChatView() {
     </div>
   );
 }
-
-
-
-
-
-

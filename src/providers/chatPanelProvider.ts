@@ -137,6 +137,16 @@ export class ChatPanelProvider extends BaseWebviewProvider {
         this.postMessage({ type: 'session-resumed', sessionId: msg.sessionId });
         break;
       }
+      case 'load-chat-history': {
+        const sessions = await sessionManager.list();
+        this.postMessage({ type: 'chat-history', sessions });
+        break;
+      }
+      case 'delete-session': {
+        await sessionManager.delete(msg.sessionId);
+        this.postMessage({ type: 'session-deleted', sessionId: msg.sessionId });
+        break;
+      }
       case 'set-mode': {
         await sessionManager.setMode(msg.mode);
         break;
@@ -312,14 +322,14 @@ export class ChatPanelProvider extends BaseWebviewProvider {
         break;
       }
       case 'get-catalog': {
-        // Only send providers that have at least one API key stored (exclude 'custom')
-        const configured: typeof CATALOG = [];
+        // Return ALL providers with configured status so UI can show lock/unlock state
+        const providers: Array<(typeof CATALOG)[number] & { configured: boolean }> = [];
         for (const p of CATALOG) {
           if (p.id === 'custom') continue;
           const hasKey = !!(await secretsService.getKey(p.id));
-          if (hasKey) configured.push(p);
+          providers.push({ ...p, configured: hasKey });
         }
-        this.postMessage({ type: 'catalog', providers: configured });
+        this.postMessage({ type: 'catalog', providers });
         break;
       }
       case 'set-model': {

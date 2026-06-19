@@ -2,6 +2,33 @@ import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../state/store';
 import { vscode } from '../utils/vscode';
 
+/** Subcomponent to apply dynamic mention color via ref (avoids inline style diagnostic). */
+function MentionItem({
+  name,
+  color,
+  description,
+  onSelect,
+}: {
+  name: string;
+  color: string;
+  description: string;
+  onSelect: () => void;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (btnRef.current) {
+      btnRef.current.style.setProperty('--mention-color', color);
+    }
+  }, [color]);
+  return (
+    <button ref={btnRef} type="button" className="mention-item" onClick={onSelect}>
+      <span className="mention-dot" />
+      <span className="mention-name">{name}</span>
+      <span className="mention-desc muted">{description}</span>
+    </button>
+  );
+}
+
 export function ChatInput() {
   const s = useStore();
   const [value, setValue] = useState('');
@@ -89,9 +116,7 @@ export function ChatInput() {
     el.style.height = Math.min(lineHeight * 8 + 16, el.scrollHeight) + 'px';
   }, [value]);
 
-  const filteredAgents = s.agents.filter((a) =>
-    a.name.toLowerCase().includes(mentionFilter),
-  );
+  const filteredAgents = s.agents.filter((a) => a.name.toLowerCase().includes(mentionFilter));
 
   const placeholder = !s.status.connected
     ? 'Conecte o Hermes primeiro…'
@@ -115,8 +140,9 @@ export function ChatInput() {
           ref={fileInputRef}
           type="file"
           multiple
-          style={{ display: 'none' }}
+          className="file-input-hidden"
           onChange={onFiles}
+          aria-label="Anexar arquivo ao chat"
         />
 
         <div className="input-textarea-wrapper">
@@ -134,17 +160,13 @@ export function ChatInput() {
           {showAgentMenu && filteredAgents.length > 0 && (
             <div className="mention-menu">
               {filteredAgents.map((a) => (
-                <button
+                <MentionItem
                   key={a.name}
-                  type="button"
-                  className="mention-item"
-                  onClick={() => selectAgent(a.name)}
-                  style={{ '--chip-color': a.color } as React.CSSProperties}
-                >
-                  <span className="mention-dot" style={{ background: a.color }} />
-                  <span className="mention-name">{a.name}</span>
-                  <span className="mention-desc muted">{a.description}</span>
-                </button>
+                  name={a.name}
+                  color={a.color}
+                  description={a.description}
+                  onSelect={() => selectAgent(a.name)}
+                />
               ))}
             </div>
           )}
@@ -169,8 +191,8 @@ export function ChatInput() {
         {s.sessionId && <span className="status-session">· sessão {s.sessionId.slice(0, 8)}</span>}
         {s.status.usage && (
           <span className="status-tokens">
-            · {(s.status.usage.used / 1000).toFixed(1)}k /{' '}
-            {(s.status.usage.size / 1000).toFixed(0)}k
+            · {(s.status.usage.used / 1000).toFixed(1)}k / {(s.status.usage.size / 1000).toFixed(0)}
+            k
           </span>
         )}
         {s.inProgress && (
@@ -179,9 +201,7 @@ export function ChatInput() {
           </button>
         )}
         <span className="grow" />
-        <span className="current-agent-tag muted">
-          @{s.currentAgent}
-        </span>
+        <span className="current-agent-tag muted">@{s.currentAgent}</span>
         <button
           className={`link-btn ${s.autoApprove ? 'on' : ''}`}
           onClick={() => vscode.postMessage({ type: 'toggle-auto-approve' })}

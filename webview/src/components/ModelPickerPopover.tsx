@@ -91,6 +91,7 @@ export function ModelPickerPopover({ onClose }: ModelPickerPopoverProps) {
           className="provider-select"
           value={selectedProvider}
           onChange={(e) => setSelectedProvider(e.target.value)}
+          title="Selecionar provedor de modelo"
         >
           {s.catalog.map((p) => (
             <option key={p.id} value={p.id}>
@@ -117,7 +118,8 @@ export function ModelPickerPopover({ onClose }: ModelPickerPopoverProps) {
 
         {fetchError && (
           <div className="picker-error">
-            ⚠ {fetchError === 'nvidia-permission'
+            ⚠{' '}
+            {fetchError === 'nvidia-permission'
               ? 'Sem permissão para listar modelos NVIDIA. Usando catálogo estático.'
               : `Erro: ${fetchError}`}
           </div>

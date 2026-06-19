@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useStore, store as storeInstance } from './state/store';
 import { ChatView } from './components/ChatView';
-import { CascadeFlow } from './components/CascadeFlow';
 import { Onboarding } from './components/Onboarding';
 import { vscode } from './utils/vscode';
 
@@ -29,6 +28,5 @@ export function App() {
   }, []);
 
   if (view === 'onboarding') return <Onboarding />;
-  if (view === 'cascade') return <CascadeFlow />;
   return <ChatView />;
 }

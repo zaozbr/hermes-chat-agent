@@ -195,7 +195,7 @@ class McpRegistryService {
           .map((c) => c.trim());
         if (cells.length >= 2 && cells[0] && cells[0] !== '---' && !cells[0].includes('Name')) {
           const name = cells[0].replace(/[*`\[\]]/g, '').trim();
-          const desc = cells.length >= 2 ? cells[1].replace(/[*`]/g, '').trim() : '';
+          const desc = cells.length >= 2 ? (cells[1] ?? '').replace(/[*`]/g, '').trim() : '';
           // Try to extract install command from description
           const cmdMatch = desc.match(/`(npx|pip|npm|uvx|dotnet)\s+([^`]+)`/);
           if (cmdMatch) {
@@ -204,8 +204,8 @@ class McpRegistryService {
               name,
               description: desc.slice(0, 300),
               transport: 'stdio',
-              command: cmdMatch[1]!,
-              args: cmdMatch[2]!.split(/\s+/),
+              command: cmdMatch[1] ?? '',
+              args: (cmdMatch[2] ?? '').split(/\s+/),
               installType: 'command',
               source: source.id,
               sourceLabel: source.label,

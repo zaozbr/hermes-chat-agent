@@ -37,13 +37,16 @@ function parseSkills(text: string): SkillInfo[] {
     if (trimmed === 'Installed Skills') continue;
     // Data rows begin and end with the vertical-bar character.
     if (!trimmed.startsWith('│') || !trimmed.endsWith('│')) continue;
-    const fields = trimmed.slice(1, -1).split('│').map((s) => s.trim());
+    const fields = trimmed
+      .slice(1, -1)
+      .split('│')
+      .map((s) => s.trim());
     if (fields.length < 2) continue;
-    const [name, category, source, trust, status] = fields;
+    const [name, category, source, _trust, status] = fields;
     // Skip the header row.
     if (name === 'Name') continue;
     out.push({
-      name,
+      name: name ?? '',
       description: category || '',
       source: source === 'hub' ? 'hub' : source === 'local' ? 'local' : 'bundled',
       enabled: /enabled/i.test(status ?? ''),

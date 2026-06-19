@@ -20,7 +20,6 @@
     "nous-research",
     "acp",
     "agent-client-protocol",
-    "cascade",
     "windsurf",
     "ai-agent",
     "code-agent",
@@ -68,12 +67,6 @@
         "title": "Open Chat",
         "category": "Hermes",
         "icon": "$(comment-discussion)"
-      },
-      {
-        "command": "hermes-agent.openCascade",
-        "title": "Open Cascade Flow",
-        "category": "Hermes",
-        "icon": "$(rocket)"
       },
       {
         "command": "hermes-agent.newSession",
@@ -166,11 +159,6 @@
         "key": "ctrl+l",
         "mac": "cmd+l",
         "when": "!editorReadonly"
-      },
-      {
-        "command": "hermes-agent.openCascade",
-        "key": "ctrl+shift+l",
-        "mac": "cmd+shift+l"
       },
       {
         "command": "hermes-agent.newSession",

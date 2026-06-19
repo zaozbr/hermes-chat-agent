@@ -43,9 +43,7 @@ export function ChatHeader({
             <span className="status-icon">⏸</span>
           </span>
         )}
-        {s.status.agentVersion && (
-          <span className="header-version">v{s.status.agentVersion}</span>
-        )}
+        {s.status.agentVersion && <span className="header-version">v{s.status.agentVersion}</span>}
       </div>
 
       <div className="chat-header-center">

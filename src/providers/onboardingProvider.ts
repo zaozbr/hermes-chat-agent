@@ -8,7 +8,7 @@ import { HermesDetection, hermesDetector } from '../services/hermesDetector';
 import { hermesInstaller, StepStatus } from '../services/hermesInstaller';
 import { processRunner } from '../services/processRunner';
 import { acpManager } from '../acp/manager';
-import { CATALOG, findProvider, findModel } from '../services/modelCatalog';
+import { CATALOG } from '../services/modelCatalog';
 import { configService } from '../services/configService';
 import { secretsService } from '../services/secretsService';
 import { logger } from '../utils/logger';
@@ -124,10 +124,11 @@ export class OnboardingProvider extends BaseWebviewProvider {
       }
       case 'open-config-file': {
         try {
-          const envHome = process.env.HERMES_HOME;
-          const localHome = process.platform === 'win32'
-            ? (process.env.LOCALAPPDATA ?? '')
-            : (process.env.HOME ?? '');
+          const envHome = process.env['HERMES_HOME'];
+          const localHome: string =
+            process.platform === 'win32'
+              ? (process.env['LOCALAPPDATA'] ?? '')
+              : (process.env['HOME'] ?? '');
           const candidates: string[] = [];
           if (envHome) candidates.push(`${envHome}/config.yaml`);
           if (process.platform === 'win32') {
@@ -148,7 +149,9 @@ export class OnboardingProvider extends BaseWebviewProvider {
               await vscode.window.showTextDocument(vscode.Uri.file(cfgPath), { preview: false });
               opened = true;
               break;
-            } catch { /* try next */ }
+            } catch {
+              /* try next */
+            }
           }
           if (!opened) {
             this.postMessage({
@@ -157,7 +160,10 @@ export class OnboardingProvider extends BaseWebviewProvider {
             });
           }
         } catch (e) {
-          this.postMessage({ type: 'error', message: `Could not open config.yaml: ${(e as Error).message}` });
+          this.postMessage({
+            type: 'error',
+            message: `Could not open config.yaml: ${(e as Error).message}`,
+          });
         }
         break;
       }
@@ -169,13 +175,21 @@ export class OnboardingProvider extends BaseWebviewProvider {
         const s = this.steps.get(msg.id);
         if (s?.cancel) {
           s.cancel();
-          this.postMessage({ type: 'step-update', id: msg.id, status: 'failed', detail: 'cancelled by user' });
+          this.postMessage({
+            type: 'step-update',
+            id: msg.id,
+            status: 'failed',
+            detail: 'cancelled by user',
+          });
         }
         break;
       }
       case 'set-model': {
         if (!this.detection?.path) {
-          this.postMessage({ type: 'error', message: 'hermes binary not found. Install it first.' });
+          this.postMessage({
+            type: 'error',
+            message: 'hermes binary not found. Install it first.',
+          });
           return;
         }
         const provider = String(msg.provider ?? '').trim();
@@ -234,9 +248,14 @@ export class OnboardingProvider extends BaseWebviewProvider {
           return;
         }
         // Run a 15s probe: hermes status --all (safe, non-interactive)
-        const r = await processRunner.run('validate-model', this.detection.path, ['status', '--all'], {
-          timeoutMs: 15_000,
-        });
+        const r = await processRunner.run(
+          'validate-model',
+          this.detection.path,
+          ['status', '--all'],
+          {
+            timeoutMs: 15_000,
+          },
+        );
         if (r.exitCode === 0) {
           this.postMessage({ type: 'model-validation', ok: true, detail: 'hermes status OK' });
         } else {
@@ -273,9 +292,10 @@ export class OnboardingProvider extends BaseWebviewProvider {
     if (id === 'setup-model' || id === 'check-model') {
       this.postMessage({
         type: 'info',
-        message: id === 'setup-model'
-          ? 'Use the picker above to set provider + model.'
-          : 'Run `Set model` in the picker above to configure.',
+        message:
+          id === 'setup-model'
+            ? 'Use the picker above to set provider + model.'
+            : 'Run `Set model` in the picker above to configure.',
       });
       return;
     }
@@ -293,9 +313,11 @@ export class OnboardingProvider extends BaseWebviewProvider {
       await def.run({
         hermesPath,
         pythonCmd: pyCmd,
-        log: (stream, chunk) => {
+        log: (_stream, chunk) => {
           // Throttle log posts: send a small marker with the chunk
-          this.pushLog(id, chunk).catch(() => { /* ignore */ });
+          this.pushLog(id, chunk).catch(() => {
+            /* ignore */
+          });
         },
       });
       runtime.status = 'done';

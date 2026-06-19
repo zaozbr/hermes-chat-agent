@@ -1,4 +1,6 @@
 export class HermesAgentProvider {
+  private providers: Record<string, any> = {};
+
   constructor() {
     this.initializeProviders();
   }
@@ -12,7 +14,7 @@ export class HermesAgentProvider {
         endpoint: 'https://api.deepseek.com/v1',
         auth: {
           method: 'api-key',
-          apiKey: '$UCPSECRET:74693f0c-fe31-4d53-81e6-1211fe61858a$',
+          apiKey: 'placeholder_demo_key',
         },
         capabilities: {
           toolCalling: true,
@@ -28,7 +30,7 @@ export class HermesAgentProvider {
     };
   }
 
-  async getProvider(modelId) {
+  async getProvider(modelId: string) {
     return this.providers[modelId] || null;
   }
 
@@ -36,13 +38,13 @@ export class HermesAgentProvider {
     return Object.values(this.providers);
   }
 
-  async testConnection(provider) {
+  async testConnection(provider: any) {
     try {
       const response = await fetch(provider.endpoint + '/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${provider.auth.apiKey.replace('$UCPSECRET:', '').replace('$', '')}`,
+          Authorization: `Bearer ${provider.auth.apiKey}`,
         },
         body: JSON.stringify({
           model: provider.model,
@@ -57,7 +59,7 @@ export class HermesAgentProvider {
 
       return await response.json();
     } catch (error) {
-      throw new Error(`Connection failed: ${error.message}`);
+      throw new Error(`Connection failed: ${(error as Error).message}`);
     }
   }
 }

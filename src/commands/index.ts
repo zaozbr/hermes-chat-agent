@@ -6,9 +6,8 @@ import { sessionManager } from '../services/sessionManager';
 import { hermesBridge } from '../services/hermesBridge';
 import { hermesDetector } from '../services/hermesDetector';
 import { secretsService } from '../services/secretsService';
-import { hermesEnvService, HERMES_ENV_MAP } from '../services/hermesEnvService';
+import { hermesEnvService } from '../services/hermesEnvService';
 import { CATALOG } from '../services/modelCatalog';
-import { hermesInstaller } from '../services/hermesInstaller';
 
 export interface CommandDeps {
   chatProvider: ChatPanelProvider;
@@ -191,7 +190,6 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
         if (!envVar) continue;
         const has = await hermesEnvService.hasKey(envVar);
         const label = catalogEntry.label;
-        const info = HERMES_ENV_MAP[envVar];
         items.push({
           label: has ? `$(pass) ${label}` : `$(key) ${label}`,
           description: has ? '✅ Key configured' : '❌ No key set',

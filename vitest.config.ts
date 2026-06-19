@@ -6,6 +6,7 @@ const CI = process.env.CI === 'true';
 export default defineConfig({
   test: {
     // ─── Core ────────────────────────────────────────────
+    name: 'hermes-agent',
     globals: true,
     environment: 'node',
     root: resolve(__dirname),

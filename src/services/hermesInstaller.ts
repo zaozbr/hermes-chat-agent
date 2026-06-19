@@ -58,7 +58,8 @@ class HermesInstaller {
               onLog: ctx.log,
             });
             if (r2.timedOut) throw new Error('py -3 --version timed out (10s)');
-            if (r2.exitCode !== 0) throw new Error('No Python 3.10+ found. Install Python 3.10+ and retry.');
+            if (r2.exitCode !== 0)
+              throw new Error('No Python 3.10+ found. Install Python 3.10+ and retry.');
             checkVersion(r2.stdout + r2.stderr);
             return;
           }
@@ -84,7 +85,10 @@ class HermesInstaller {
             { timeoutMs: 10_000, onLog: ctx.log },
           );
           if (probe.exitCode === 0 && probe.stdout.trim() === '1') {
-            ctx.log('stdout', '\n✓ hermes-agent already importable in active Python — skipping install.\n');
+            ctx.log(
+              'stdout',
+              '\n✓ hermes-agent already importable in active Python — skipping install.\n',
+            );
             return;
           }
 
@@ -114,7 +118,8 @@ class HermesInstaller {
               ['install', 'hermes-agent[acp]'],
               { timeoutMs: 600_000, onLog: ctx.log },
             );
-            if (r.timedOut) throw new Error('pipx install timed out (10 min) — try the terminal button.');
+            if (r.timedOut)
+              throw new Error('pipx install timed out (10 min) — try the terminal button.');
             if (r.exitCode !== 0) throw new Error(`pipx install failed (exit ${r.exitCode})`);
             return;
           }
@@ -130,7 +135,8 @@ class HermesInstaller {
             timeoutMs: 600_000,
             onLog: ctx.log,
           });
-          if (r.timedOut) throw new Error('pip install timed out (10 min) — try the terminal button.');
+          if (r.timedOut)
+            throw new Error('pip install timed out (10 min) — try the terminal button.');
           if (r.exitCode !== 0) {
             const tail = (r.stderr || r.stdout).split(/\r?\n/).slice(-6).join('\n');
             throw new Error(
@@ -155,7 +161,9 @@ class HermesInstaller {
           });
           if (r.timedOut) throw new Error('hermes --version timed out (10s)');
           if (r.exitCode !== 0) {
-            throw new Error('hermes --version failed. Open a terminal and run `hermes --version` to diagnose.');
+            throw new Error(
+              'hermes --version failed. Open a terminal and run `hermes --version` to diagnose.',
+            );
           }
         },
       },
@@ -201,14 +209,17 @@ class HermesInstaller {
             timeoutMs: 600_000,
             onLog: ctx.log,
           });
-          if (r.timedOut) throw new Error('hermes postinstall timed out (10 min). Run `hermes postinstall` in a terminal.');
+          if (r.timedOut)
+            throw new Error(
+              'hermes postinstall timed out (10 min). Run `hermes postinstall` in a terminal.',
+            );
           if (r.exitCode !== 0) throw new Error(`hermes postinstall failed (exit ${r.exitCode})`);
         },
       },
       {
         id: 'setup-browser',
         label: 'Install browser tool (optional, ~400MB)',
-        description: 'hermes acp --setup-browser --yes. Skip if you don\'t need browser automation.',
+        description: "hermes acp --setup-browser --yes. Skip if you don't need browser automation.",
         status: 'pending',
         needsHermes: true,
         run: async (ctx) => {
@@ -219,7 +230,10 @@ class HermesInstaller {
             ['acp', '--setup-browser', '--yes'],
             { timeoutMs: 600_000, onLog: ctx.log },
           );
-          if (r.timedOut) throw new Error('browser install timed out (10 min). Run `hermes acp --setup-browser --yes` in a terminal.');
+          if (r.timedOut)
+            throw new Error(
+              'browser install timed out (10 min). Run `hermes acp --setup-browser --yes` in a terminal.',
+            );
           if (r.exitCode !== 0) throw new Error(`browser install failed (exit ${r.exitCode})`);
         },
       },
@@ -236,12 +250,12 @@ class HermesInstaller {
    */
   openTerminalWithInstall() {
     const isWin = process.platform === 'win32';
-    const inVenv = !!process.env.VIRTUAL_ENV;
+    const inVenv = !!process.env['VIRTUAL_ENV'];
     const pipLine = inVenv
       ? 'pip install hermes-agent[acp]'
       : isWin
-      ? 'pip install --user hermes-agent[acp]'
-      : 'pipx install hermes-agent[acp]';
+        ? 'pip install --user hermes-agent[acp]'
+        : 'pipx install hermes-agent[acp]';
     const installCmd = `${pipLine} && hermes postinstall`;
     const term = vscode.window.createTerminal({ name: 'Hermes Install' });
     term.show(true);
@@ -253,25 +267,39 @@ class HermesInstaller {
    * blessed write path) instead of editing YAML directly, so the file
    * is re-serialized by Hermes and stays consistent with the schema.
    */
-  async setModel(hermesPath: string, provider: string, model: string, baseUrl?: string): Promise<void> {
+  async setModel(
+    hermesPath: string,
+    provider: string,
+    model: string,
+    baseUrl?: string,
+  ): Promise<void> {
     if (!provider) throw new Error('provider is required');
     if (!model) throw new Error('model id is required');
-    const r1 = await processRunner.run('config-set-provider', hermesPath, [
-      'config', 'set', 'model.provider', provider,
-    ], { timeoutMs: 15_000 });
+    const r1 = await processRunner.run(
+      'config-set-provider',
+      hermesPath,
+      ['config', 'set', 'model.provider', provider],
+      { timeoutMs: 15_000 },
+    );
     if (r1.exitCode !== 0) {
       throw new Error(`hermes config set model.provider failed: ${r1.stderr || r1.stdout}`);
     }
-    const r2 = await processRunner.run('config-set-model', hermesPath, [
-      'config', 'set', 'model.default', model,
-    ], { timeoutMs: 15_000 });
+    const r2 = await processRunner.run(
+      'config-set-model',
+      hermesPath,
+      ['config', 'set', 'model.default', model],
+      { timeoutMs: 15_000 },
+    );
     if (r2.exitCode !== 0) {
       throw new Error(`hermes config set model.default failed: ${r2.stderr || r2.stdout}`);
     }
     if (baseUrl) {
-      const r3 = await processRunner.run('config-set-base-url', hermesPath, [
-        'config', 'set', 'model.base_url', baseUrl,
-      ], { timeoutMs: 15_000 });
+      const r3 = await processRunner.run(
+        'config-set-base-url',
+        hermesPath,
+        ['config', 'set', 'model.base_url', baseUrl],
+        { timeoutMs: 15_000 },
+      );
       if (r3.exitCode !== 0) {
         throw new Error(`hermes config set model.base_url failed: ${r3.stderr || r3.stdout}`);
       }
@@ -288,8 +316,8 @@ class HermesInstaller {
 function checkVersion(out: string) {
   const m = out.match(/Python (\d+)\.(\d+)/);
   if (!m) throw new Error(`Could not parse Python version from: ${out.trim()}`);
-  const major = parseInt(m[1], 10);
-  const minor = parseInt(m[2], 10);
+  const major = parseInt(m[1] ?? '0', 10);
+  const minor = parseInt(m[2] ?? '0', 10);
   if (major < 3 || (major === 3 && minor < 10)) {
     throw new Error(`Python ${major}.${minor} found, but 3.10+ is required.`);
   }
@@ -298,6 +326,7 @@ function checkVersion(out: string) {
 interface HermesConfig {
   model?: {
     provider?: string;
+    model?: string;
     default?: string;
     base_url?: string;
     api_mode?: string;
@@ -308,12 +337,12 @@ async function findHermesConfigPath(): Promise<string> {
   // Hermes home can be at $HERMES_HOME or in a few well-known locations.
   // We probe a generous list so we find config.yaml on Windows / macOS / Linux
   // for both pip-style and venv-style installs.
-  const envHome = process.env.HERMES_HOME;
+  const envHome = process.env['HERMES_HOME'];
   let localHome: string;
   if (process.platform === 'win32') {
-    localHome = process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
+    localHome = process.env['LOCALAPPDATA'] ?? path.join(os.homedir(), 'AppData', 'Local');
   } else {
-    localHome = process.env.HOME ?? os.homedir();
+    localHome = process.env['HOME'] ?? os.homedir();
   }
   const candidates: string[] = [];
   if (envHome) candidates.push(path.join(envHome, 'config.yaml'));
@@ -333,7 +362,9 @@ async function findHermesConfigPath(): Promise<string> {
     try {
       await fs.access(c);
       return c;
-    } catch { /* not here */ }
+    } catch {
+      /* not here */
+    }
   }
   throw new Error(`hermes config.yaml not found. Tried:\n  ${candidates.join('\n  ')}`);
 }

@@ -116,7 +116,7 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 
         <div className="config-group">
           <label>Chaves de API por Provedor</label>
-          <p className="muted" style={{ fontSize: 11 }}>
+          <p className="small-muted">
             Armazenadas de forma segura no VS Code. Reaplicadas automaticamente ao trocar de
             provedor.
           </p>
@@ -126,9 +126,7 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
                 <div className="api-key-info">
                   <span className={`dot ${apiKeys[p.id] ? 'on' : 'off'}`} />
                   <span className="api-key-label">{p.label}</span>
-                  <span className="muted" style={{ fontSize: 10 }}>
-                    {p.envVar}
-                  </span>
+                  <span className="xsmall-muted">{p.envVar}</span>
                 </div>
                 <div className="api-key-actions">
                   {showSaved === p.id && <span className="saved-indicator">✓ Salvo</span>}
@@ -183,7 +181,7 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
 
         <div className="config-group">
           <label>URL Base por Provedor</label>
-          <p className="muted" style={{ fontSize: 11 }}>
+          <p className="small-muted">
             Endpoint da API para cada provedor. Alterado automaticamente ao trocar de modelo.
           </p>
           <div className="api-keys-list">
@@ -192,18 +190,7 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
                 <div className="api-key-info">
                   <span className={`dot ${storedUrls[p.id] ? 'on' : 'off'}`} />
                   <span className="api-key-label">{p.label}</span>
-                  <span
-                    className="muted"
-                    style={{
-                      fontSize: 10,
-                      maxWidth: 200,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {baseUrls[p.id]}
-                  </span>
+                  <span className="url-text">{baseUrls[p.id]}</span>
                 </div>
                 <div className="api-key-actions">
                   {showUrlSaved === p.id && <span className="saved-indicator">✓ Salvo</span>}

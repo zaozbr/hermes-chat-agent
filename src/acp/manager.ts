@@ -65,9 +65,10 @@ class AcpManager extends EventEmitter {
       const requireFn = createRequire(path.join(extPath, 'package.json'));
       const sdkPath = requireFn.resolve('@agentclientprotocol/sdk');
       // On Windows, dynamic import() requires file:// URL for absolute paths
-      const sdkUrl = process.platform === 'win32'
-        ? 'file:///' + sdkPath.replace(/\\/g, '/')
-        : 'file://' + sdkPath;
+      const sdkUrl =
+        process.platform === 'win32'
+          ? 'file:///' + sdkPath.replace(/\\/g, '/')
+          : 'file://' + sdkPath;
       this.sdk = await import(sdkUrl);
     }
 
@@ -101,41 +102,47 @@ class AcpManager extends EventEmitter {
       ...process.env,
       ...storedKeys,
       ...userEnv,
-      HERMES_ACCEPT_HOOKS: userEnv.HERMES_ACCEPT_HOOKS ?? '1',
+      HERMES_ACCEPT_HOOKS: userEnv['HERMES_ACCEPT_HOOKS'] ?? '1',
       TERM: 'xterm-256color',
     };
 
     logger.info(`spawning ${detection.path} ${args.join(' ')}`);
-    logger.info(`env HERMES_MODEL=${env.HERMES_MODEL ?? '(unset)'} HERMES_PROVIDER=${env.HERMES_PROVIDER ?? '(unset)'}`);
+    logger.info(
+      `env HERMES_MODEL=${env['HERMES_MODEL'] ?? '(unset)'} HERMES_PROVIDER=${env['HERMES_PROVIDER'] ?? '(unset)'}`,
+    );
 
-    this.proc = spawn(detection.path, args, {
+    this.proc = spawn(detection.path, args.filter(Boolean) as string[], {
       env,
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'pipe'] as const,
       windowsHide: true,
     });
 
-    this.proc.stderr?.on('data', (d: Buffer) => {
+    this.proc!.stderr?.on('data', (d: Buffer) => {
       const s = d.toString();
       // log at info (not debug) when the agent says something is wrong
       const lvl = /error|exception|traceback|failed|unrecognized/i.test(s) ? 'error' : 'debug';
       if (lvl === 'error') logger.error(`[hermes stderr] ${s.trim()}`);
       else logger.debug(`[hermes stderr] ${s}`);
     });
-    this.proc.on('exit', (code, signal) => {
+    this.proc!.on('exit', (code, signal) => {
       const msg = `hermes exited (code=${code}${signal ? `, signal=${signal}` : ''})`;
       logger.warn(msg);
       this.proc = null;
       this.conn = null;
       this.setStatus({ connected: false, error: msg });
     });
-    this.proc.on('error', (e) => {
+    this.proc!.on('error', (e) => {
       logger.error('hermes spawn error', e);
       this.setStatus({ connected: false, error: `spawn error: ${e.message}` });
     });
 
     // Convert Node streams to Web streams (Node 18+).
-    const input = Readable.toWeb(this.proc.stdout as Readable) as unknown as ReadableStream<Uint8Array>;
-    const output = Writable.toWeb(this.proc.stdin as Writable) as unknown as WritableStream<Uint8Array>;
+    const input = Readable.toWeb(
+      this.proc!.stdout as Readable,
+    ) as unknown as ReadableStream<Uint8Array>;
+    const output = Writable.toWeb(
+      this.proc!.stdin as Writable,
+    ) as unknown as WritableStream<Uint8Array>;
     const stream = this.sdk.ndJsonStream(output, input);
 
     const client = this.createClient(this.sdk);
@@ -266,7 +273,8 @@ class AcpManager extends EventEmitter {
           const r: any = result;
           if (
             r.outcome?.outcome === 'selected' &&
-            params.options.find((o: any) => o.optionId === r.outcome.optionId)?.kind === 'allow_always'
+            params.options.find((o: any) => o.optionId === r.outcome.optionId)?.kind ===
+              'allow_always'
           ) {
             permissionStore.set(id, r.outcome.optionId);
           }

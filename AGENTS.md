@@ -65,7 +65,7 @@ NUNCA entregar sem verificar fluxo completo com evidências.**
 
 ### 🥉 Nível 1 — Essencial (obrigatório SEMPRE)
 
-```
+```text
 ☐ Trace o fluxo completo: webview → store → extension → service → resposta
 ☐ Verifique contratos: nomes de mensagens, campos, tipos em TODOS os pontos
 ☐ Teste edge cases: vazios, nulos, erros, timeouts, cancelamento
@@ -77,7 +77,7 @@ NUNCA entregar sem verificar fluxo completo com evidências.**
 
 ### 🥈 Nível 2 — Profissional (recomendado para toda entrega)
 
-```
+```text
 ☐ Cobertura: npx vitest run --coverage ≥ 80% statements, ≥ 70% branches
 ☐ Integração: teste o fluxo ACP real (hermes acp → prompt → resposta)
 ☐ Lint: npx eslint src webview/src --quiet ✅
@@ -88,7 +88,7 @@ NUNCA entregar sem verificar fluxo completo com evidências.**
 
 ### 🥇 Nível 3 — World-Class (CI Pipeline — GitHub Actions)
 
-```
+```text
 ☐ CI Pipeline: .github/workflows/ci.yml roda em todo push/PR
 ☐ 6 gates automáticos: lint → typecheck → test/coverage → security → build → summary
 ☐ Coverage gate: ≥ 80% statements, ≥ 70% branches, ≥ 75% functions
@@ -115,7 +115,42 @@ npm run build         # 📦 Build + bundle size check
 
 ---
 
-## REGRA INEGOCIÁVEL #3: Nunca mexer no Unify Chat Provider
+## REGRA INEGOCIÁVEL #3: Sempre absorver regras
+
+**Cada novo prompt DEVE reabsorver:**
+
+- Este `AGENTS.md`
+- `.github/copilot-instructions.md` (auto-loaded)
+- `TESTING_GUIDELINES.md` (diretrizes de testes)
+- `EXTENSIONS_INTEGRATION.md` (se disponível na sessão)
+
+---
+
+## REGRA INEGOCIÁVEL #4: 🧪 Expandir testes a CADA alteração
+
+**Toda alteração de código DEVE vir acompanhada de expansão de testes.**
+Consulte `TESTING_GUIDELINES.md` para templates, padrões e métricas.
+
+| Tipo                       | Mínimo de testes novos                 |
+| -------------------------- | -------------------------------------- |
+| Novo componente            | 3+ (render, estados, interações)       |
+| Nova função/método         | 3+ (happy path, edge cases, erro)      |
+| Nova store handler/message | 2+ (payload válido, payload edge)      |
+| Correção de bug            | 1+ (teste que comprova a correção)     |
+| Refatoração                | 0 (mas garantir que existentes passam) |
+
+**NUNCA aceitar estes como "teste suficiente":**
+
+- ❌ "O componente existe" sem testar estados
+- ❌ "A função retorna algo" sem testar edge cases
+- ❌ Apenas happy path sem testar erros
+- ❌ Testes que não rodam de forma confiável (flaky)
+
+**Consultar `TESTING_GUIDELINES.md`** para templates, padrões e métricas.
+
+---
+
+## REGRA INEGOCIÁVEL #5: Nunca mexer no Unify Chat Provider
 
 **🚫 NUNCA modificar configurações do Unify Chat Provider** (`smallmain.vscode-unify-chat-provider`) sem autorização explícita e verbal do usuário. Isso inclui:
 
@@ -124,17 +159,10 @@ npm run build         # 📦 Build + bundle size check
 - `chatLanguageModels.json`
 - Arquivos da extensão em `.vscode-insiders/extensions/smallmain.vscode-unify-chat-provider-*/`
 
+**Exceção autorizada**: Consertar o endpoint **[FREE] DeepSeek V4 Flash Free (openCode Zen)** quando ele parar de funcionar — ver `RECOVER_DEEPSEEK_FIX.md` para o passo-a-passo completo. Resumo: `settings.json` → `"apiKey": " "`, patchear `chat-completion-client.js` → `token ?? ' '`, patchear `client.js` (github-copilot) → `'2022-11-28'`.
+
+**Recovery doc:** `E:\Hermes agent\RECOVER_DEEPSEEK_FIX.md`
 **Backup de rollback disponível em:** `E:\Hermes agent\.backups\` (2026-06-13)
-
-## REGRA INEGOCIÁVEL #4: Sempre absorver regras
-
-**Cada novo prompt DEVE reabsorver:**
-
-- Este `AGENTS.md`
-- `.github/copilot-instructions.md` (auto-loaded)
-- `EXTENSIONS_INTEGRATION.md` (se disponível na sessão)
-
----
 
 ## Build Commands
 
@@ -183,19 +211,17 @@ Hermes ACP (Python, hermes acp)
 
 ## Key Files
 
-| Arquivo                                  | Papel                                |
-| ---------------------------------------- | ------------------------------------ |
-| `src/extension.ts`                       | Activation, provider registration    |
-| `src/providers/chatPanelProvider.ts`     | Webview provider + message handlers  |
-| `src/providers/cascadePanelProvider.ts`  | Cascade Flow provider                |
-| `src/services/hermesInstaller.ts`        | Model set/get via hermes CLI         |
-| `src/services/hermesDetector.ts`         | Auto-detection of hermes CLI         |
-| `src/services/sessionManager.ts`         | Session lifecycle                    |
-| `src/services/processRunner.ts`          | Subprocess manager (timeout, cancel) |
-| `webview/src/state/store.ts`             | React state (State, Store)           |
-| `webview/src/components/ChatView.tsx`    | All UI components (6 tabs)           |
-| `webview/src/components/CascadeFlow.tsx` | Windsurf-style cascade UI            |
-| `webview/src/styles/components.css`      | All component styles (900+ linhas)   |
+| Arquivo                               | Papel                                |
+| ------------------------------------- | ------------------------------------ |
+| `src/extension.ts`                    | Activation, provider registration    |
+| `src/providers/chatPanelProvider.ts`  | Webview provider + message handlers  |
+| `src/services/hermesInstaller.ts`     | Model set/get via hermes CLI         |
+| `src/services/hermesDetector.ts`      | Auto-detection of hermes CLI         |
+| `src/services/sessionManager.ts`      | Session lifecycle                    |
+| `src/services/processRunner.ts`       | Subprocess manager (timeout, cancel) |
+| `webview/src/state/store.ts`          | React state (State, Store)           |
+| `webview/src/components/ChatView.tsx` | Main chat view (Ask/Edit/Cascade)    |
+| `webview/src/styles/components.css`   | All component styles (900+ linhas)   |
 
 ---
 

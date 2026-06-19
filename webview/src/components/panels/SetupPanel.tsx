@@ -40,7 +40,7 @@ export function SetupPanel({ s }: { s: ReturnType<typeof useStore> }) {
               spellCheck={false}
               placeholder="# Configuração do Hermes"
             />
-            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            <div className="inline-flex-row">
               <button onClick={save}>💾 Salvar</button>
               <button onClick={() => vscode.postMessage({ type: 'open-config-file' })}>
                 📂 Abrir no editor

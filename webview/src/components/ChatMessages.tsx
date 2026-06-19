@@ -52,8 +52,8 @@ export function ChatMessages() {
             <div className="empty-icon">🤖</div>
             <p className="empty-title">Diga oi ao Hermes</p>
             <p className="empty-subtitle muted">
-              Modo Ask: perguntas e explicações · Modo Edit: alterações no código ·
-              Modo Cascade: workflows multi-etapa
+              Modo Ask: perguntas e explicações · Modo Edit: alterações no código · Modo Cascade:
+              workflows multi-etapa
             </p>
             {s.status.connected && !s.sessionId && (
               <button onClick={() => s.newSession(s.mode)} className="empty-btn">
@@ -113,9 +113,7 @@ function MessageBubble({ m }: { m: Message }) {
   }
   return (
     <div className={`msg ${m.kind}`}>
-      <div className="msg-avatar">
-        {m.kind === 'user' ? '👤' : '🤖'}
-      </div>
+      <div className="msg-avatar">{m.kind === 'user' ? '👤' : '🤖'}</div>
       <div className="msg-content">
         <div className="msg-role">{m.kind === 'user' ? 'Você' : 'Hermes'}</div>
         <div className="bubble" dangerouslySetInnerHTML={{ __html: renderMarkdown(m.text) }} />

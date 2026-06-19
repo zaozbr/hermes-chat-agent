@@ -44,8 +44,8 @@ AGENTS.md contém as REGRAS INEGOCIÁVEIS do projeto.
 │  ┌──────────┐  postMessage  ┌──────────────────────┐ │
 │  │ Extension│ ◄──────────►  │ Webview (React+Vite) │ │
 │  │ Host     │               │ - ChatView (6 tabs)  │ │
-│  │ Services │  JSON-RPC 2.0 │ - CascadeFlow        │ │
-│  └────┬─────┘  over stdio   │ - Onboarding Wizard  │ │
+│  │ Services │  JSON-RPC 2.0 │ - Onboarding Wizard  │
+│  └────┬─────┘  over stdio   │                      │
 │       │                     └──────────────────────┘ │
 │       ▼                                               │
 │  ┌────────────────────────────────────────┐           │
@@ -333,23 +333,23 @@ code --install-extension "E:\Hermes agent\vscode-hermes-agent-0.1.0.vsix" --forc
 
 ### VS Code Comandos (Ctrl+Shift+P)
 
-| Comando                               | Descrição            |
-| ------------------------------------- | -------------------- |
-| `Hermes: Chat (Ctrl+L)`               | Abrir chat           |
-| `Hermes: Cascade Flow (Ctrl+Shift+L)` | Abrir Cascade Flow   |
-| `Hermes: New Session (Ctrl+Alt+N)`    | Nova sessão          |
-| `Hermes: Inline Edit (Ctrl+I)`        | Edição inline        |
-| `Hermes: Onboarding`                  | Abrir setup wizard   |
-| `Todo Tree: Toggle`                   | Abrir lista de TODOs |
+| Comando                                   | Descrição                         |
+| ----------------------------------------- | --------------------------------- |
+| `Hermes: Chat (Ctrl+L)`                   | Abrir chat                        |
+| ~~`Hermes: Cascade Flow (Ctrl+Shift+L)`~~ | ~~Abrir Cascade Flow~~ (removido) |
+| `Hermes: New Session (Ctrl+Alt+N)`        | Nova sessão                       |
+| `Hermes: Inline Edit (Ctrl+I)`            | Edição inline                     |
+| `Hermes: Onboarding`                      | Abrir setup wizard                |
+| `Todo Tree: Toggle`                       | Abrir lista de TODOs              |
 
 ### Atalhos de Teclado
 
-| Atalho         | Ação         |
-| -------------- | ------------ |
-| `Ctrl+L`       | Chat         |
-| `Ctrl+Shift+L` | Cascade Flow |
-| `Ctrl+I`       | Inline edit  |
-| `Ctrl+Alt+N`   | Nova sessão  |
+| Atalho             | Ação                        |
+| ------------------ | --------------------------- |
+| `Ctrl+L`           | Chat                        |
+| ~~`Ctrl+Shift+L`~~ | ~~Cascade Flow~~ (removido) |
+| `Ctrl+I`           | Inline edit                 |
+| `Ctrl+Alt+N`       | Nova sessão                 |
 
 ---
 
