@@ -21,3 +21,9 @@ playwright-report/
 
 # Screenshots
 Captura de tela *.png
+
+# Windows reserved NUL device
+nul
+
+# Temporary PowerShell utility scripts
+scripts/*.ps1

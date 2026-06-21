@@ -66,6 +66,7 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
     { id: 'together', label: 'Together AI', envVar: 'TOGETHER_API_KEY' },
     { id: 'mistral', label: 'Mistral', envVar: 'MISTRAL_API_KEY' },
     { id: 'deepseek', label: 'DeepSeek', envVar: 'DEEPSEEK_API_KEY' },
+    { id: 'opencode', label: 'OpenCode Zen', envVar: 'OPENCODE_ZEN_API_KEY' },
   ];
 
   function saveKey() {

@@ -35,6 +35,7 @@ Cada ferramenta abaixo me dá contexto para tomar decisões melhores. Verifique 
 - Extensão No-Credit-Limit instalada (`hermes-agent.no-credit-limit`)
 - ✅ **MCPs**: `hermes mcp list` — 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
 - ✅ **Tabela de MCPs** abaixo para saber quais tools estão disponíveis
+- ✅ **Ativação automática de MCP tools**: execute `activate_group_0_2` até `activate_group_5_2` para ativar tools do GitHub MCP (necessário a cada sessão)
 - ✅ **Copilot CLI plugins**: 5 plugins instalados via `copilot plugin install`
   - `superpowers@superpowers-marketplace` (14 skills)
   - `episodic-memory@superpowers-marketplace` (memória entre sessões)
@@ -49,6 +50,44 @@ Antes de iniciar qualquer tarefa, consulte os skills relevantes em:
 1. **`.agents/skills/`** — 41 skills instalados via skills.sh (Superpowers, Anthropic, Vercel, Vibe)
 2. **`skills/`** — Skills baixados manualmente para referência
 3. Use a tabela de skills abaixo para escolher qual consultar
+
+### Passo 2.5: Ativar MCP Tools (OBRIGATÓRIO)
+
+**Antes de iniciar qualquer tarefa, ative os grupos de tools MCP:**
+
+Chame **TODOS** estes ativadores em sequência (não pule nenhum):
+
+| Ativador             | O que ativa                                                                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activate_group_0_2` | `add_comment_to_pending_review`, `add_issue_comment`                                                                                                       |
+| `activate_group_1_2` | `git_branch`, `git_checkout`, `git_pull`, `git_stash`, `git_status`, `git_worktree`                                                                        |
+| `activate_group_2_2` | `git_fetch`, `git_push`, `repository_get_file_content`                                                                                                     |
+| `activate_group_3_2` | `commit_composer`, `launchpad`, `start_work`                                                                                                               |
+| `activate_group_4_2` | `start_review`, `pull_request_assigned_to_me`, `pull_request_create`, `pull_request_create_review`, `pull_request_get_comments`, `pull_request_get_detail` |
+| `activate_group_5_2` | `issues_assigned_to_me`, `issues_get_detail`                                                                                                               |
+
+> ⚡ **Regra**: Se um ativador falhar, continue com os próximos. O importante é ativar o máximo possível.
+
+#### 🤖 GitHub MCP Tools (já ativos nativamente)
+
+Estes tools estão disponíveis **sem necessidade de ativação**:
+
+`create_or_update_file`, `delete_file`, `fork_repository`, `get_file_blame`, `list_branches`, `list_issue_fields`, `list_repository_collaborators`, `pull_request_review_write`, `push_files`, `run_secret_scanning`, `sequential_thinking`
+
+### Passo 2.6: Validar MCP Tools (opcional, mas recomendado)
+
+Execute testes rápidos para confirmar que os MCPs estão operacionais:
+
+```
+# Teste Sequential Thinking
+mcp_sequential-th_sequentialthinking → deve retornar sucesso
+
+# Teste GitHub MCP (autenticação)
+mcp_github_mcp_se_get_me → deve retornar dados do usuário
+
+# Teste GitHub MCP (repo)
+mcp_github_mcp_se_get_file_contents(owner:"zaozbr", repo:"hermes-chat-agent", path:"README.md")
+```
 
 ### Passo 3: Iniciar Trabalho
 
@@ -94,15 +133,16 @@ Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
 
 **Toda vez que alterar ou adicionar código, os testes DEVEM ser expandidos.**
 
-| Tipo | Mínimo de testes novos |
-|------|----------------------|
-| Novo componente | 3+ (render, estados, interações) |
-| Nova função/método | 3+ (happy path, edge cases, erro) |
-| Nova store handler/message | 2+ (payload válido, payload edge) |
-| Correção de bug | 1+ (teste que comprova a correção) |
-| Refatoração | 0 (mas garantir que existentes passam) |
+| Tipo                       | Mínimo de testes novos                 |
+| -------------------------- | -------------------------------------- |
+| Novo componente            | 3+ (render, estados, interações)       |
+| Nova função/método         | 3+ (happy path, edge cases, erro)      |
+| Nova store handler/message | 2+ (payload válido, payload edge)      |
+| Correção de bug            | 1+ (teste que comprova a correção)     |
+| Refatoração                | 0 (mas garantir que existentes passam) |
 
 **NUNCA aceitar estes como "teste suficiente":**
+
 - ❌ "O componente existe" sem testar estados
 - ❌ "A função retorna algo" sem testar edge cases
 - ❌ Apenas happy path sem testar erros
@@ -112,41 +152,53 @@ Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
 
 ---
 
-## 🚀 COMANDO `commit!` — Protocolo de Finalização
+## 🚀 COMANDO `commit!` — Protocolo de Finalização (com MCP)
 
 **Quando o usuário digitar `commit!` no chat, EXECUTE IMEDIATAMENTE:**
 
-### Passo 1: Documentar
+### Passo 1: Documentar (com MCP)
+
 - Capture tudo da sessão: o que foi feito, lições aprendidas, conhecimento gerado
 - **Registre a expansão de testes**: quantos testes foram adicionados, em quais arquivos, cobertura
 - Atualize `PROGRESS.md` com nova seção (data + resumo)
 - Salve descobertas importantes na memória (`/memories/`)
+- ✅ **MCP**: Use `mcp_github_mcp_se_add_issue_comment` para registrar progresso em issues relacionadas
 
 ### Passo 2: Safepoint
+
 - Crie timestamp: `yyyyMMdd-HHmmss`
 - Crie tag git: `git tag safepoint-<timestamp>`
 - Crie diretório: `.backups/commit-<timestamp>/`
 
 ### Passo 3: Backup
+
 - `git diff --name-only` → arquivos modificados
 - `git ls-files --others --exclude-standard` → arquivos novos
 - Copie TODOS para `.backups/commit-<timestamp>/`
 
 ### Passo 4: Stage
+
 - `git add --all`
 
-### Passo 5: Accept (Verificação)
+### Passo 5: Accept — Verificação (com MCP)
+
 - `git status --short` → mostre resumo
 - Verifique se há erros de compilação
+- ✅ **MCP (Complex Debug)**: Se houver erros complexos, use `mcp_sequential-th_sequentialthinking` para raciocínio estruturado
+- ✅ **MCP (Code Search)**: Use `mcp_github_mcp_se_search_code` para encontrar referências e verificar impacto das mudanças
+- ✅ **MCP (Secret Scan)**: Use `mcp_github_mcp_se_run_secret_scanning` para verificar se não há segredos nos arquivos alterados
 
 ### Passo 6: Commit
+
 - Construa mensagem descritiva: `<tipo>(<escopo>): <descrição>`
 - `git commit -m "..."`
 
 ### Passo 7: Push
+
 - `git push origin HEAD`
 
 ### Passo 8: Resume Point (Retorno)
+
 - Atualize `PROGRESS.md` com checkpoint (data/hora + próximos passos)
 - Atualize user memory (`/memories/`) com lições e descobertas
 - Atualize repo memory (`/memories/repo/`) se necessário
@@ -160,6 +212,7 @@ Cada novo prompt DEVE reabsorver este arquivo + AGENTS.md.
 **Quando o usuário digitar `oi!` no chat, EXECUTE IMEDIATAMENTE este workflow para retomar do checkpoint salvo:**
 
 ### Passo 1: Reabsorver Conhecimento (rápido)
+
 Leia na ordem:
 
 1. **`PROGRESS.md`** (apenas o header) → Identificar checkpoint, tag safepoint, commit, próximo passo
@@ -167,6 +220,7 @@ Leia na ordem:
 3. **`docs/ARCHITECTURE.md`** → Diagrama de componentes (rápido)
 
 ### Passo 2: Verificar Ambiente
+
 Execute rapidamente (não precisa exibir tudo — só confirmar que está OK):
 
 ```
@@ -192,9 +246,11 @@ npx vitest run → 8/8 passing?
 ```
 
 ### Passo 4: Perguntar
+
 - Termine com: **"O que você quer fazer agora?"** — e aguarde instruções do usuário.
 
 ### Regras
+
 1. **NÃO** refazer build nem rodar testes completos a menos que o usuário peça
 2. **NÃO** iniciar nenhuma tarefa sem o usuário dizer o que quer
 3. **NÃO** modificar nenhum arquivo — só leitura e apresentação
@@ -224,7 +280,7 @@ Hermes ACP (Python, hermes acp)
 ## 🔧 Comandos Rápidos
 
 | Comando                                     | Descrição             |
-| ------------------------------------------- | --------------------- |
+| ------------------------------------------- | --------------------- | --- | ------------------- | --------------------- |
 | `node scripts/build.mjs --mode production`  | Build completo        |
 | `npm test`                                  | Rodar todos os testes |
 | `npm run test:watch`                        | Testes em watch mode  |
@@ -232,9 +288,10 @@ Hermes ACP (Python, hermes acp)
 | `npm run test:ui`                           | UI mode interativa    |
 | `npx tsc -p tsconfig.json --noEmit`         | Type check host       |
 | `npx tsc -p tsconfig.webview.json --noEmit` | Type check webview    |
-| `npx eslint src webview/src --quiet`        | Lint                  || `copilot --version`                          | Verificar Copilot CLI |
-| `copilot plugin list`                        | Listar plugins ativos |
-| `copilot plugin marketplace browse <name>`   | Navegar marketplace   |
+| `npx eslint src webview/src --quiet`        | Lint                  |     | `copilot --version` | Verificar Copilot CLI |
+| `copilot plugin list`                       | Listar plugins ativos |
+| `copilot plugin marketplace browse <name>`  | Navegar marketplace   |
+
 ---
 
 ## 🧩 Extensões Integradas
@@ -265,55 +322,55 @@ Todas configuradas em `.vscode/settings.json`:
 
 ### Instalados automaticamente
 
-| Repositório               | Skills | Função                                        |
-| ------------------------- | ------ | --------------------------------------------- |
-| **obra/superpowers**      | 14     | TDD, debugging, planejamento, code review     |
-| **anthropics/skills**     | 18     | MCP builder, frontend-design, documentos      |
-| **vercel-labs/agent-skills** | 9   | React, deploy, otimização, composição         |
-| **Vibe-Skills**           | 1      | Vibes / padrões de desenvolvimento            |
+| Repositório                  | Skills | Função                                    |
+| ---------------------------- | ------ | ----------------------------------------- |
+| **obra/superpowers**         | 14     | TDD, debugging, planejamento, code review |
+| **anthropics/skills**        | 18     | MCP builder, frontend-design, documentos  |
+| **vercel-labs/agent-skills** | 9      | React, deploy, otimização, composição     |
+| **Vibe-Skills**              | 1      | Vibes / padrões de desenvolvimento        |
 
 ### Skills personalizados do projeto
 
-| Skill | Arquivo | Função |
-| ----- | ------- | ------ |
+| Skill            | Arquivo                                | Função                                                                                                             |
+| ---------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | **hermes-agent** | `.agents/skills/hermes-agent/SKILL.md` | Arquitetura, regras (deploy/QA), fluxo ACP, build, MCP, testes — **OBRIGATÓRIO** para qualquer alteração no Hermes |
 
 ### Os 14 Superpowers (mais relevantes)
 
-| Skill                        | Quando usar                                                |
-| ---------------------------- | ---------------------------------------------------------- |
-| `test-driven-development`    | Antes de codificar: escrever testes primeiro               |
-| `systematic-debugging`       | Bugs complexos: rastreamento sistemático                   |
-| `writing-plans`              | Planejamento antes de implementar grandes mudanças         |
-| `subagent-driven-development`| Delegar subtarefas para subagentes                         |
-| `brainstorming`              | Exploração de ideias e soluções criativas                  |
-| `verification-before-completion` | Verificar se a solução atende aos requisitos          |
-| `requesting-code-review`     | Pedir review de código efetivo                             |
-| `receiving-code-review`      | Processar feedback de code review                          |
-| `executing-plans`            | Executar planos passo-a-passo                              |
-| `dispatching-parallel-agents`| Trabalho paralelo com múltiplos agentes                    |
+| Skill                            | Quando usar                                        |
+| -------------------------------- | -------------------------------------------------- |
+| `test-driven-development`        | Antes de codificar: escrever testes primeiro       |
+| `systematic-debugging`           | Bugs complexos: rastreamento sistemático           |
+| `writing-plans`                  | Planejamento antes de implementar grandes mudanças |
+| `subagent-driven-development`    | Delegar subtarefas para subagentes                 |
+| `brainstorming`                  | Exploração de ideias e soluções criativas          |
+| `verification-before-completion` | Verificar se a solução atende aos requisitos       |
+| `requesting-code-review`         | Pedir review de código efetivo                     |
+| `receiving-code-review`          | Processar feedback de code review                  |
+| `executing-plans`                | Executar planos passo-a-passo                      |
+| `dispatching-parallel-agents`    | Trabalho paralelo com múltiplos agentes            |
 
 ### Skills da Anthropic
 
-| Skill                   | Quando usar                                     |
-| ----------------------- | ----------------------------------------------- |
-| `frontend-design`       | Design de interfaces React/componentes          |
-| `mcp-builder`           | Criar servidores MCP personalizados             |
-| `claude-api`            | Integração com API Claude                       |
-| `docx`/`pdf`/`pptx`/`xlsx` | Geração de documentos Office                 |
-| `web-artifacts-builder` | Artefatos web standalone                        |
-| `webapp-testing`        | Testes de aplicações web                        |
-| `skill-creator`         | Criar seus próprios skills                      |
+| Skill                      | Quando usar                            |
+| -------------------------- | -------------------------------------- |
+| `frontend-design`          | Design de interfaces React/componentes |
+| `mcp-builder`              | Criar servidores MCP personalizados    |
+| `claude-api`               | Integração com API Claude              |
+| `docx`/`pdf`/`pptx`/`xlsx` | Geração de documentos Office           |
+| `web-artifacts-builder`    | Artefatos web standalone               |
+| `webapp-testing`           | Testes de aplicações web               |
+| `skill-creator`            | Criar seus próprios skills             |
 
 ### Skills Vercel
 
-| Skill                          | Quando usar                              |
-| ------------------------------ | ---------------------------------------- |
-| `vercel-optimize`              | Otimização de performance                |
-| `vercel-react-best-practices`  | Melhores práticas React                  |
-| `vercel-composition-patterns`  | Padrões de composição React              |
-| `deploy-to-vercel`             | Deploy para Vercel                       |
-| `web-design-guidelines`        | Diretrizes de design web                 |
+| Skill                         | Quando usar                 |
+| ----------------------------- | --------------------------- |
+| `vercel-optimize`             | Otimização de performance   |
+| `vercel-react-best-practices` | Melhores práticas React     |
+| `vercel-composition-patterns` | Padrões de composição React |
+| `deploy-to-vercel`            | Deploy para Vercel          |
+| `web-design-guidelines`       | Diretrizes de design web    |
 
 ### Como usar skills
 
@@ -337,27 +394,32 @@ npx skills ls
 ## 🌐 Marketplaces & Registries
 
 ### skills.sh (Vercel)
+
 - **URL**: https://skills.sh
 - **CLI**: `npx skills add <owner/repo>` — 701K+ installs, centenas de skills
 - **Instalação**: Skills instalados em `.agents/skills/` para 71 agentes diferentes
 - **Como buscar**: `npx skills find <keyword>`
 
 ### Open VSX
+
 - **URL**: https://open-vsx.org — 14K+ extensões open-source
 - **Config**: Descomentar `extensions.gallery` em `.vscode/settings.json`
 - **Instalação manual**: Baixar .vsix → `code-insiders --install-extension <file>.vsix`
 
 ### MCP Registry
+
 - **URL**: https://registry.modelcontextprotocol.io
 - **Propósito**: Catálogo oficial de servidores MCP (centenas disponíveis)
 - **Instalação**: `hermes mcp add <server-name>` ou config no JSON do MCP
 
 ### GitHub Copilot Plugin Marketplace
+
 - **CLI**: `copilot plugin marketplace add obra/superpowers-marketplace`
 - **Requer**: GitHub Copilot CLI (`npm install -g @githubnext/github-copilot-cli`)
 - **Nota**: CLI não instalado atualmente — instale com `winget install --id GitHub.CopilotCLI` ou `npm i -g @githubnext/github-copilot-cli`
 
 ### VS Code Marketplace (Oficial)
+
 - **URL**: https://marketplace.visualstudio.com/vscode
 - **Acesso**: Direto pelo VS Code Insiders (padrão)
 - **55 extensões** instaladas atualmente
@@ -474,6 +536,7 @@ e:\Hermes agent\
 ```
 
 ### Disparadores que ativam este protocolo:
+
 - `run_in_terminal` com timeout longo (>40s)
 - `runTests` com muitos arquivos
 - `runSubagent` para tarefas complexas

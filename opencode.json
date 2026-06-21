@@ -5,5 +5,17 @@
   "logLevel": "INFO",
   "autoupdate": "notify",
   "snapshot": true,
-  "instructions": ["AGENTS.md", "EXTENSIONS_INTEGRATION.md"]
+  "instructions": ["AGENTS.md", "EXTENSIONS_INTEGRATION.md"],
+  "permission": {
+    "edit": "allow",
+    "bash": "allow",
+    "task": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "read": "allow",
+    "webfetch": "allow",
+    "todowrite": "allow",
+    "question": "allow"
+  }
 }

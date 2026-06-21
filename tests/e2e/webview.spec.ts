@@ -250,7 +250,7 @@ test.describe('💬 Chat Flow (mocked)', () => {
     await expect(page.locator('.typing')).toHaveCount(0);
   });
 
-  test('13 - deve mudar entre abas corretamente', async ({ page }) => {
+  test('13 - deve abrir e fechar sidebar de histórico', async ({ page }) => {
     await page.addInitScript(MOCK_BRIDGE_SCRIPT);
 
     await page.goto('/');
@@ -263,20 +263,22 @@ test.describe('💬 Chat Flow (mocked)', () => {
     });
     await page.waitForTimeout(200);
 
-    // Clicar na aba Setup
-    await page.locator('.agent-tab').nth(1).click();
-    await page.waitForTimeout(200);
+    // Clicar no botão Histórico (🕐)
+    await page.locator('button.header-btn[aria-label="Histórico"]').click();
+    await page.waitForTimeout(300);
 
-    // Deve mostrar o título Setup
-    await expect(page.locator('.agent-tab.active')).toContainText('Setup');
+    // A sidebar de histórico deve aparecer
+    await expect(page.locator('.chat-history-sidebar')).toBeVisible();
 
-    // Voltar para Chat
-    await page.locator('.agent-tab').first().click();
-    await page.waitForTimeout(200);
-    await expect(page.locator('.agent-tab.active')).toContainText('Chat');
+    // Fechar clicando no overlay
+    await page.locator('.sidebar-overlay').click();
+    await page.waitForTimeout(300);
+
+    // A sidebar deve desaparecer
+    await expect(page.locator('.chat-history-sidebar')).toHaveCount(0);
   });
 
-  test('14 - deve trocar entre modos Edit/Ask', async ({ page }) => {
+  test('14 - deve trocar entre modos Ask/Edit', async ({ page }) => {
     await page.addInitScript(MOCK_BRIDGE_SCRIPT);
 
     await page.goto('/');
@@ -289,15 +291,17 @@ test.describe('💬 Chat Flow (mocked)', () => {
     });
     await page.waitForTimeout(200);
 
-    // Modo Edit (code) deve estar ativo por padrão
-    const editTab = page.locator('.mode-tab').first();
-    await expect(editTab).toHaveClass(/active/);
+    // Modo Ask deve estar ativo por padrão
+    const askPill = page.locator('.mode-pill').first();
+    await expect(askPill).toHaveClass(/active/);
+    await expect(askPill).toContainText('Ask');
 
-    // Clicar em Ask
-    const askTab = page.locator('.mode-tab').nth(1);
-    await askTab.click();
+    // Clicar em Edit
+    const editPill = page.locator('.mode-pill').nth(1);
+    await editPill.click();
     await page.waitForTimeout(200);
-    await expect(askTab).toHaveClass(/active/);
+    await expect(editPill).toHaveClass(/active/);
+    await expect(editPill).toContainText('Edit');
   });
 
   test('15 - deve exibir modelo inválido com opção de reverter', async ({ page }) => {

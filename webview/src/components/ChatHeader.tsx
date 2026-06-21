@@ -47,16 +47,20 @@ export function ChatHeader({
       </div>
 
       <div className="chat-header-center">
-        {(s.status.provider || s.status.model) && (
-          <button
-            className="header-model-badge"
-            onClick={() => onOpenModelPicker()}
-            title="Clique para trocar modelo"
-          >
-            <span className="model-badge-icon">🧠</span>
-            {formatModelBadge(s.status.provider, s.status.model)}
-          </button>
-        )}
+        <button
+          className={`header-model-badge ${!s.status.provider && !s.status.model ? 'no-model' : ''}`}
+          onClick={() => onOpenModelPicker()}
+          title={
+            s.status.provider || s.status.model
+              ? 'Clique para trocar modelo'
+              : 'Clique para configurar um modelo'
+          }
+        >
+          <span className="model-badge-icon">🧠</span>
+          {s.status.provider || s.status.model
+            ? formatModelBadge(s.status.provider, s.status.model)
+            : 'Configurar modelo'}
+        </button>
         <div className="chat-mode-pills">
           {(['ask', 'edit', 'cascade'] as ChatMode[]).map((mode) => (
             <button

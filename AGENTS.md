@@ -33,6 +33,7 @@ Cada ferramenta abaixo me dá contexto para tomar decisões melhores. Verifique 
 - Extensão No-Credit-Limit instalada (`hermes-agent.no-credit-limit`)
 - ✅ **MCPs**: `hermes mcp list` — 6 servidores (sequential-thinking, filesystem, github, memory, puppeteer, fetch-url)
 - ✅ **Tabela de MCPs** abaixo para saber quais tools estão disponíveis
+- ✅ **Ativação automática de MCP tools**: execute `activate_group_0_2` até `activate_group_5_2` para ativar tools do GitHub MCP (necessário a cada sessão)
 
 ### Passo 3: Iniciar Trabalho
 
