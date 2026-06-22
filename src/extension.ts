@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { registerCommands } from './commands';
 import { ChatPanelProvider } from './providers/chatPanelProvider';
+import { OnboardingProvider } from './providers/onboardingProvider';
 import { statusBar } from './ui/statusBar';
 import { logger } from './utils/logger';
 import { acpManager } from './acp/manager';
@@ -10,6 +11,7 @@ import { configService } from './services/configService';
 import { hermesEnvService } from './services/hermesEnvService';
 
 let chatProvider: ChatPanelProvider;
+let onboardingProvider: OnboardingProvider | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
   logger.init(context);
@@ -31,6 +33,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(ChatPanelProvider.viewId, chatProvider, {
+      webviewOptions: { retainContextWhenHidden: true },
+    }),
+  );
+
+  // Register onboarding provider so the setup wizard can be shown
+  onboardingProvider = new OnboardingProvider(context, detected);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(OnboardingProvider.viewId, onboardingProvider, {
       webviewOptions: { retainContextWhenHidden: true },
     }),
   );

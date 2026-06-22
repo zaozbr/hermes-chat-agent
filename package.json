@@ -58,6 +58,13 @@
           "type": "webview",
           "icon": "media/icon-comment.svg",
           "contextualTitle": "Hermes Agent"
+        },
+        {
+          "id": "hermes-agent.onboarding",
+          "name": "Setup",
+          "type": "webview",
+          "icon": "media/icon-comment.svg",
+          "contextualTitle": "Hermes Setup"
         }
       ]
     },

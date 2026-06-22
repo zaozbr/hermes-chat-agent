@@ -29,12 +29,8 @@ export function Onboarding() {
           </div>
         )}
         <div className="row">
-          <button onClick={() => vscode.postMessage({ type: 're-detect' })}>
-            🔄 Re-detectar
-          </button>
-          <button onClick={() => s.openConfigFile()}>
-            📄 Abrir config.yaml
-          </button>
+          <button onClick={() => vscode.postMessage({ type: 're-detect' })}>🔄 Re-detectar</button>
+          <button onClick={() => s.openConfigFile()}>📄 Abrir config.yaml</button>
         </div>
       </section>
 
@@ -42,11 +38,11 @@ export function Onboarding() {
         <section>
           <h3>2. Instalar Hermes</h3>
           <p>
-            Hermes é distribuído como <code>hermes-agent</code> no PyPI. Recomendado instalar
-            via <code>pipx</code> (ou <code>pip --user</code>).
+            Hermes é distribuído como <code>hermes-agent</code> no PyPI. Recomendado instalar via{' '}
+            <code>pipx</code> (ou <code>pip --user</code>).
           </p>
           <pre className="cmd">
-{`pip install --user hermes-agent[acp]
+            {`pip install --user hermes-agent[acp]
 hermes postinstall`}
           </pre>
           <div className="row">
@@ -66,9 +62,17 @@ hermes postinstall`}
       <section>
         <h3>3. Passos individuais</h3>
         <p className="muted" style={{ fontSize: 11, margin: '0 0 8px' }}>
-          Cada passo tem timeout, pode ser cancelado e mostra o log ao vivo. Nenhum passo
-          lança TUI interativo.
+          Cada passo tem timeout, pode ser cancelado e mostra o log ao vivo. Nenhum passo lança TUI
+          interativo.
         </p>
+        <div className="row" style={{ marginBottom: 12 }}>
+          <button
+            onClick={() => vscode.postMessage({ type: 'run-all-install-steps' })}
+            style={{ background: 'var(--accent)', color: '#fff', fontWeight: 600 }}
+          >
+            ▶ Executar todos os passos (Auto Setup)
+          </button>
+        </div>
         <ol className="steps">
           {s.installSteps.map((step) => (
             <StepRow
@@ -127,11 +131,11 @@ function StepRow({
       <div className="step-body">
         <strong>{step.label}</strong>
         <p className="muted">{step.description}</p>
-        {step.detail && step.status === 'failed' && (
-          <pre className="err">{step.detail}</pre>
-        )}
+        {step.detail && step.status === 'failed' && <pre className="err">{step.detail}</pre>}
         {step.detail && step.status === 'done' && (
-          <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>→ {step.detail}</p>
+          <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>
+            → {step.detail}
+          </p>
         )}
         {log && (
           <details>
@@ -192,15 +196,19 @@ function ModelPickerSection() {
           ✓ <strong>{s.modelStatus.provider}</strong> / <code>{s.modelStatus.model}</code>
         </div>
       ) : (
-        <div className="warn">
-          ⚠ Modelo não configurado. Escolha abaixo:
-        </div>
+        <div className="warn">⚠ Modelo não configurado. Escolha abaixo:</div>
       )}
 
       <div className="picker">
         <label>
           Provedor:
-          <select value={provider} onChange={(e) => { setProvider(e.target.value); setModel(''); }}>
+          <select
+            value={provider}
+            onChange={(e) => {
+              setProvider(e.target.value);
+              setModel('');
+            }}
+          >
             <option value="">— escolha —</option>
             {s.catalog.map((p) => (
               <option key={p.id} value={p.id}>
@@ -243,9 +251,12 @@ function ModelPickerSection() {
           <p className="muted" style={{ fontSize: 11 }}>
             Este provedor precisa de <code>{providerEntry.envVars.join('</code> ou <code>')}</code>{' '}
             no <code>.env</code> da Hermes. Se não tiver a chave, pegue em{' '}
-            <a href={`https://${provider === 'nvidia' ? 'build.nvidia.com' : 'console.example.com'}`}>
+            <a
+              href={`https://${provider === 'nvidia' ? 'build.nvidia.com' : 'console.example.com'}`}
+            >
               {provider === 'nvidia' ? 'build.nvidia.com' : 'console do provedor'}
-            </a>.
+            </a>
+            .
           </p>
         )}
 
@@ -253,9 +264,7 @@ function ModelPickerSection() {
           <button onClick={submit} disabled={!canSubmit}>
             💾 Salvar no config.yaml
           </button>
-          <button onClick={() => s.validateModel()}>
-            🔍 Testar (hermes status)
-          </button>
+          <button onClick={() => s.validateModel()}>🔍 Testar (hermes status)</button>
         </div>
 
         {s.modelValidation && (

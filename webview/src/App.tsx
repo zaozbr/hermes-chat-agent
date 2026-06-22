@@ -21,6 +21,8 @@ export function App() {
     window.addEventListener('message', onMessage);
     try {
       vscode.postMessage({ type: 'ready' });
+      // Load catalog (providers + models) right after ready
+      storeInstance.getCatalog();
     } catch (e) {
       console.error('postMessage(ready) failed', e);
     }

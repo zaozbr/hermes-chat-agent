@@ -184,6 +184,27 @@ export class OnboardingProvider extends BaseWebviewProvider {
         }
         break;
       }
+      case 'run-all-install-steps': {
+        // Run every step in sequence, skipping already-done ones
+        const allSteps = hermesInstaller.steps();
+        for (const stepDef of allSteps) {
+          const runtime = this.steps.get(stepDef.id);
+          if (!runtime || runtime.status === 'done') continue;
+          if (stepDef.id === 'setup-model' || stepDef.id === 'check-model') {
+            // These steps are driven by the model picker — skip them
+            runtime.status = 'skipped';
+            runtime.detail = 'Use o seletor de modelo acima';
+            await this.pushSteps();
+            continue;
+          }
+          await this.runStep(stepDef.id);
+        }
+        this.postMessage({
+          type: 'info',
+          message: 'Auto-setup concluído! Configure o modelo acima.',
+        });
+        break;
+      }
       case 'set-model': {
         if (!this.detection?.path) {
           this.postMessage({

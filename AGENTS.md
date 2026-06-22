@@ -334,7 +334,9 @@ code --install-extension .\\vscode-hermes-agent-<versao>.vsix --force
 - Execute os testes de unidade: `npm test` (gatilho via vitest, roda no terminal do VS Code).
 - Execute os testes end‑to‑end pelo Playwright que abrem e interagem com o VS Code estável real: `npm run test:e2e`.
 - Os testes E2E devem validar a extensão **instalada no VS Code Stable**, testando comandos, webview e integração diretamente no editor.
-- Apenas se ambos (unit + e2e) passarem prossiga ao próximo passo.
+- **Testes de integração real**: Devem ser feitos via automação Playwright que abre uma instância do VS Code nesta máquina, instala a extensão, e emula o uso real (abrir webview, interagir com chat, verificar modelos listados, testar auto-setup). Use `code --install-extension` + `playwright` para controlar a UI real do VS Code.
+- **Critério de aprovação**: Nenhum teste é considerado suficiente se não passar em uma instância real do VS Code nesta máquina. Testes mockados são complementares, nunca substitutos.
+- Apenas se todos os níveis (unit + e2e + integração real) passarem, prossiga ao próximo passo.
 
 ### Passo 4 – Commit e Tag Final
 
