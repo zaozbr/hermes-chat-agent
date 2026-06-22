@@ -329,9 +329,12 @@ code --install-extension .\\vscode-hermes-agent-<versao>.vsix --force
 
 ### Passo 3 – Testes Automatizados no VS Code
 
-- Execute os testes de unidade: `npm test`.
-- Execute os testes end‑to‑end pelo Playwright em VS Code: `npm run test:e2e` (esse script já invoca o VS Code estável).
-- Apenas se ambos passarem prossiga ao próximo passo.
+- **Todo teste deve ser executado diretamente no VS Code Stable** (não Insiders). O comando `code` deve resolver para `C:\Program Files\Microsoft VS Code\bin\code.cmd`.
+- Antes de testar, a extensão **deve** ser desinstalada e reinstalada com o VSIX recém‑gerado (Passo 2).
+- Execute os testes de unidade: `npm test` (gatilho via vitest, roda no terminal do VS Code).
+- Execute os testes end‑to‑end pelo Playwright que abrem e interagem com o VS Code estável real: `npm run test:e2e`.
+- Os testes E2E devem validar a extensão **instalada no VS Code Stable**, testando comandos, webview e integração diretamente no editor.
+- Apenas se ambos (unit + e2e) passarem prossiga ao próximo passo.
 
 ### Passo 4 – Commit e Tag Final
 
