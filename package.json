@@ -1,6 +1,6 @@
 {
   "name": "vscode-hermes-agent",
-  "displayName": "Hermes Agent for VS Code",
+  "displayName": "Nosso hermes agent",
   "description": "Full Cascade-grade AI coding agent for VS Code, powered by Hermes Agent via the Agent Client Protocol (ACP). Multi-file edits, plans, tool calls, terminal, MCP, skills, sessions, approvals — all driven from the editor.",
   "version": "0.1.0",
   "publisher": "hermes-agent",

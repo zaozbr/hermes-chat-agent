@@ -304,3 +304,26 @@ Instalados via `hermes mcp add`. Ativados automaticamente em toda sessão do Her
 | Testar renderização do webview    | puppeteer           | `puppeteer_navigate`, `puppeteer_screenshot`          |
 | Preencher formulários na UI       | puppeteer           | `puppeteer_fill`, `puppeteer_click`                   |
 | Buscar conteúdo de páginas web    | fetch-url           | `fetch-url`                                           |
+
+---
+
+## Regra Innegociável #6: Versionamento e Testes Automatizados
+---
+### Passo 1 – Incrementar a versão
+- Quando um teste for solicitado, a extensão deve ter seu `version` incrementado seguindo a convenção SemVer baseada na natureza da mudança (major, minor, patch).
+- Utilize `npm version <journey>` (por ex., `npm version patch`) para atualizar `package.json` e criar o commit/tag automaticamente.
+### Passo 2 – Build e Deploy no VS Code
+- Rode `node scripts/build.mjs --mode production` para gerar o VSIX.
+- Desinstale a extensão já instalada: ```bash
+code --uninstall-extension hermes-agent.vscode-hermes-agent
+```
+- Instale o VSIX recém‑gerado: ```bash
+code --install-extension .\\vscode-hermes-agent-<versao>.vsix --force
+```
+### Passo 3 – Testes Automatizados no VS Code
+- Execute os testes de unidade: `npm test`.
+- Execute os testes end‑to‑end pelo Playwright em VS Code: `npm run test:e2e` (esse script já invoca o VS Code estável).
+- Apenas se ambos passarem prossiga ao próximo passo.
+### Passo 4 – Commit e Tag Final
+- Após o sucesso dos testes, rode `commit!` para aplicar a etapa de documentação e backup automática.
+---

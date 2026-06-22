@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-06-14T21:09:26.153Z",
+  "timestamp": "2026-06-22T00:32:31.996Z",
   "total": 32,
-  "working": 24,
-  "failing": 8,
+  "working": 21,
+  "failing": 11,
   "results": [
     {
       "provider": "OpenRouter",
@@ -10,7 +10,7 @@
       "name": "[FREE] Free Models Router",
       "ok": true,
       "status": 200,
-      "latency": 2026,
+      "latency": 1580,
       "error": ""
     },
     {
@@ -19,7 +19,7 @@
       "name": "[FREE] Meta Llama 3.3 70B Instruct",
       "ok": false,
       "status": 429,
-      "latency": 509,
+      "latency": 529,
       "error": "Provider returned error"
     },
     {
@@ -28,7 +28,7 @@
       "name": "[FREE] Meta Llama 3.2 3B Instruct",
       "ok": false,
       "status": 429,
-      "latency": 447,
+      "latency": 454,
       "error": "Provider returned error"
     },
     {
@@ -37,7 +37,7 @@
       "name": "[FREE] Nous Hermes 3 405B Instruct",
       "ok": false,
       "status": 429,
-      "latency": 504,
+      "latency": 448,
       "error": "Provider returned error"
     },
     {
@@ -46,7 +46,7 @@
       "name": "[FREE] Qwen3 Coder 480B A35B",
       "ok": false,
       "status": 429,
-      "latency": 499,
+      "latency": 508,
       "error": "Provider returned error"
     },
     {
@@ -55,7 +55,7 @@
       "name": "[FREE] Qwen3 Next 80B A3B Instruct",
       "ok": false,
       "status": 429,
-      "latency": 438,
+      "latency": 450,
       "error": "Provider returned error"
     },
     {
@@ -64,7 +64,7 @@
       "name": "[FREE] OpenAI GPT-OSS 120B",
       "ok": true,
       "status": 200,
-      "latency": 2105,
+      "latency": 1902,
       "error": ""
     },
     {
@@ -73,7 +73,7 @@
       "name": "[FREE] OpenAI GPT-OSS 20B",
       "ok": true,
       "status": 200,
-      "latency": 1689,
+      "latency": 1630,
       "error": ""
     },
     {
@@ -82,17 +82,17 @@
       "name": "[FREE] Google Gemma 4 31B",
       "ok": true,
       "status": 200,
-      "latency": 1132,
+      "latency": 1602,
       "error": ""
     },
     {
       "provider": "OpenRouter",
       "model": "google/gemma-4-26b-a4b-it:free",
       "name": "[FREE] Google Gemma 4 26B A4B",
-      "ok": true,
+      "ok": false,
       "status": 200,
-      "latency": 1031,
-      "error": ""
+      "latency": 300659,
+      "error": "Internal Server Error"
     },
     {
       "provider": "OpenRouter",
@@ -100,7 +100,7 @@
       "name": "[FREE] Google Lyria 3 Pro Preview",
       "ok": false,
       "status": 502,
-      "latency": 1516,
+      "latency": 1243,
       "error": "Provider returned error"
     },
     {
@@ -109,7 +109,7 @@
       "name": "[FREE] Google Lyria 3 Clip Preview",
       "ok": false,
       "status": 502,
-      "latency": 1209,
+      "latency": 1266,
       "error": "Provider returned error"
     },
     {
@@ -118,7 +118,7 @@
       "name": "[FREE] NVIDIA Nemotron 3 Ultra",
       "ok": true,
       "status": 200,
-      "latency": 1272,
+      "latency": 43638,
       "error": ""
     },
     {
@@ -127,7 +127,7 @@
       "name": "[FREE] NVIDIA Nemotron 3 Super",
       "ok": true,
       "status": 200,
-      "latency": 784,
+      "latency": 9620,
       "error": ""
     },
     {
@@ -136,7 +136,7 @@
       "name": "[FREE] NVIDIA Nemotron 3 Nano 30B A3B",
       "ok": true,
       "status": 200,
-      "latency": 646,
+      "latency": 750,
       "error": ""
     },
     {
@@ -145,7 +145,7 @@
       "name": "[FREE] NVIDIA Nemotron 3 Nano Omni Reasoning",
       "ok": true,
       "status": 200,
-      "latency": 710,
+      "latency": 661,
       "error": ""
     },
     {
@@ -154,7 +154,7 @@
       "name": "[FREE] NVIDIA Nemotron Nano 12B V2 VL",
       "ok": true,
       "status": 200,
-      "latency": 889,
+      "latency": 680,
       "error": ""
     },
     {
@@ -163,7 +163,7 @@
       "name": "[FREE] NVIDIA Nemotron Nano 9B V2",
       "ok": true,
       "status": 200,
-      "latency": 647,
+      "latency": 3046,
       "error": ""
     },
     {
@@ -172,7 +172,7 @@
       "name": "[FREE] NVIDIA Nemotron 3.5 Content Safety",
       "ok": true,
       "status": 200,
-      "latency": 557,
+      "latency": 601,
       "error": ""
     },
     {
@@ -181,7 +181,7 @@
       "name": "[FREE] Liquid LFM2.5 1.2B Thinking",
       "ok": true,
       "status": 200,
-      "latency": 586,
+      "latency": 7287,
       "error": ""
     },
     {
@@ -190,7 +190,7 @@
       "name": "[FREE] Liquid LFM2.5 1.2B Instruct",
       "ok": true,
       "status": 200,
-      "latency": 478,
+      "latency": 593,
       "error": ""
     },
     {
@@ -199,7 +199,7 @@
       "name": "[FREE] Poolside Laguna XS.2",
       "ok": true,
       "status": 200,
-      "latency": 573,
+      "latency": 546,
       "error": ""
     },
     {
@@ -208,7 +208,7 @@
       "name": "[FREE] Poolside Laguna M.1",
       "ok": true,
       "status": 200,
-      "latency": 1857,
+      "latency": 1153,
       "error": ""
     },
     {
@@ -217,17 +217,17 @@
       "name": "[FREE] Venice Uncensored (Dolphin 24B)",
       "ok": false,
       "status": 429,
-      "latency": 510,
+      "latency": 527,
       "error": "Provider returned error"
     },
     {
       "provider": "OpenRouter",
       "model": "nex-agi/nex-n2-pro:free",
       "name": "[FREE] Nex AGI Nex-N2-Pro",
-      "ok": true,
-      "status": 200,
-      "latency": 2169,
-      "error": ""
+      "ok": false,
+      "status": 429,
+      "latency": 448,
+      "error": "Provider returned error"
     },
     {
       "provider": "OpenRouter",
@@ -235,7 +235,7 @@
       "name": "[FREE] OpenRouter Owl Alpha",
       "ok": true,
       "status": 200,
-      "latency": 7578,
+      "latency": 2460,
       "error": ""
     },
     {
@@ -244,7 +244,7 @@
       "name": "[FREE] GLM-5.1 (Synthetic)",
       "ok": true,
       "status": 200,
-      "latency": 1324,
+      "latency": 1210,
       "error": ""
     },
     {
@@ -253,7 +253,7 @@
       "name": "[FREE] GLM-4.7 Flash (Synthetic)",
       "ok": true,
       "status": 200,
-      "latency": 476,
+      "latency": 356,
       "error": ""
     },
     {
@@ -262,7 +262,7 @@
       "name": "[FREE] Kimi K2.6 (Synthetic)",
       "ok": true,
       "status": 200,
-      "latency": 746,
+      "latency": 759,
       "error": ""
     },
     {
@@ -271,17 +271,17 @@
       "name": "[FREE] Qwen3.6 27B (Synthetic)",
       "ok": true,
       "status": 200,
-      "latency": 490,
+      "latency": 524,
       "error": ""
     },
     {
       "provider": "Synthetic",
       "model": "hf:MiniMaxAI/MiniMax-M3",
       "name": "[FREE] MiniMax M3 (Synthetic)",
-      "ok": true,
-      "status": 200,
-      "latency": 723,
-      "error": ""
+      "ok": false,
+      "status": 0,
+      "latency": 20009,
+      "error": "timeout"
     },
     {
       "provider": "Synthetic",
@@ -289,7 +289,7 @@
       "name": "[FREE] NVIDIA Nemotron 3 120B (Synthetic)",
       "ok": true,
       "status": 200,
-      "latency": 442,
+      "latency": 749,
       "error": ""
     }
   ]
