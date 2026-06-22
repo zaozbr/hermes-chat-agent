@@ -53,6 +53,7 @@ class SecretsService {
       { id: 'mistral', envVar: 'MISTRAL_API_KEY' },
       { id: 'fireworks', envVar: 'FIREWORKS_API_KEY' },
       { id: 'deepseek', envVar: 'DEEPSEEK_API_KEY' },
+      { id: 'synthetic', envVar: 'SYNTHETIC_API_KEY' },
     ];
     for (const p of providers) {
       const key = await this.getKey(p.id);

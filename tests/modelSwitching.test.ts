@@ -65,8 +65,8 @@ import { hermesInstaller } from '../src/services/hermesInstaller';
 // ════════════════════════════════════════════════════════════════════════════
 
 describe('🧩 modelCatalog — data integrity', () => {
-  it('has exactly 6 providers (openrouter, openai, anthropic, nous, nvidia, opencode, custom)', () => {
-    expect(CATALOG).toHaveLength(7);
+  it('has exactly 8 providers (openrouter, openai, anthropic, nous, nvidia, opencode, synthetic, custom)', () => {
+    expect(CATALOG).toHaveLength(8);
     const ids = CATALOG.map((p) => p.id);
     expect(ids).toContain('openrouter');
     expect(ids).toContain('openai');
@@ -74,6 +74,7 @@ describe('🧩 modelCatalog — data integrity', () => {
     expect(ids).toContain('nous');
     expect(ids).toContain('nvidia');
     expect(ids).toContain('opencode');
+    expect(ids).toContain('synthetic');
     expect(ids).toContain('custom');
   });
 

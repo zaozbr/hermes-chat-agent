@@ -17,6 +17,7 @@ export const HERMES_ENV_MAP: Record<string, { providerId: string; label: string 
   NOUS_API_KEY: { providerId: 'nous', label: 'Nous Portal' },
   GOOGLE_API_KEY: { providerId: 'google', label: 'Google AI Studio' },
   DEEPSEEK_API_KEY: { providerId: 'deepseek', label: 'DeepSeek' },
+  SYNTHETIC_API_KEY: { providerId: 'synthetic', label: 'Synthetic' },
 };
 
 /** Path to the Hermes .env file */
@@ -96,6 +97,25 @@ class HermesEnvService {
     const escapedVar = envVar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`^[ \\t]*${escapedVar}=.+$`, 'm');
     return regex.test(content);
+  }
+
+  /**
+   * Read all known API keys from the .env file and return them as a record.
+   * Only returns keys that are uncommented and have a non-empty value.
+   */
+  async readAllKeys(): Promise<Record<string, string>> {
+    const content = await this.readEnv();
+    if (!content) return {};
+    const result: Record<string, string> = {};
+    for (const envVar of Object.keys(HERMES_ENV_MAP)) {
+      const escapedVar = envVar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`^[ \\t]*${escapedVar}=(.+)$`, 'm');
+      const match = regex.exec(content);
+      if (match && match[1]) {
+        result[envVar] = match[1].trim();
+      }
+    }
+    return result;
   }
 
   /**

@@ -8,7 +8,7 @@ import { acpManager } from './acp/manager';
 import { hermesDetector } from './services/hermesDetector';
 import { secretsService } from './services/secretsService';
 import { configService } from './services/configService';
-import { hermesEnvService } from './services/hermesEnvService';
+import { hermesEnvService, HERMES_ENV_MAP } from './services/hermesEnvService';
 
 let chatProvider: ChatPanelProvider;
 let onboardingProvider: OnboardingProvider | undefined;
@@ -80,20 +80,47 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   }
 
-  // Auto-check: if OpenCode Zen key is missing, prompt user to configure it
-  if (!(await hermesEnvService.hasKey('OPENCODE_ZEN_API_KEY'))) {
-    // Small delay so the UI settles first
-    setTimeout(async () => {
-      const action = await vscode.window.showInformationMessage(
-        'Hermes: OpenCode Zen API key not configured. Configure it now for free model access?',
-        'Configure API Key',
-        'Not now',
-      );
-      if (action === 'Configure API Key') {
-        await vscode.commands.executeCommand('hermes-agent.configureApiKey');
+  // Auto-sync API keys from Hermes .env → SecretStorage on startup
+  // This ensures the extension can pass API keys as env vars to the ACP process
+  (async () => {
+    try {
+      const envKeys = await hermesEnvService.readAllKeys();
+      let synced = 0;
+      for (const [envVar, apiKey] of Object.entries(envKeys)) {
+        if (apiKey) {
+          const info = HERMES_ENV_MAP[envVar];
+          if (info) {
+            await secretsService.setKey(info.providerId, apiKey);
+            synced++;
+          }
+        }
       }
-    }, 1500);
-  }
+      if (synced > 0) {
+        logger.info(`Auto-synced ${synced} API key(s) from Hermes .env to SecretStorage`);
+      }
+    } catch (e) {
+      logger.warn(`Failed to auto-sync API keys: ${(e as Error).message}`);
+    }
+  })();
+
+  // Check if any API key is configured; if not, prompt user to configure one
+  (async () => {
+    const allKeys = await hermesEnvService.readAllKeys();
+    const hasAnyKey = Object.keys(allKeys).length > 0;
+    if (!hasAnyKey) {
+      // Small delay so the UI settles first
+      setTimeout(async () => {
+        const action = await vscode.window.showInformationMessage(
+          'Hermes: Nenhuma chave de API configurada. Configure uma agora para usar modelos de IA.',
+          'Configure API Key',
+          'Not now',
+        );
+        if (action === 'Configure API Key') {
+          await vscode.commands.executeCommand('hermes-agent.configureApiKey');
+        }
+      }, 1500);
+    }
+  })();
 
   logger.info('Hermes Agent for VS Code activated');
 }

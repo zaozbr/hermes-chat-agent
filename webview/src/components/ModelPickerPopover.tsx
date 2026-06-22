@@ -66,7 +66,17 @@ export function ModelPickerPopover({ onClose }: ModelPickerPopoverProps) {
         m.label.toLowerCase().includes(filter.toLowerCase()) ||
         m.id.toLowerCase().includes(filter.toLowerCase()),
     )
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => {
+      // Free models first, then sorted by label within each group
+      const aFree = (a as any).free ? 1 : 0;
+      const bFree = (b as any).free ? 1 : 0;
+      if (aFree !== bFree) return bFree - aFree;
+      return a.label.localeCompare(b.label);
+    });
+
+  // Split into free and paid for section headers
+  const freeModels = filteredModels.filter((m) => (m as any).free);
+  const paidModels = filteredModels.filter((m) => !(m as any).free);
 
   const fetchError = s.providerModelsError[selectedProvider];
 
@@ -127,22 +137,47 @@ export function ModelPickerPopover({ onClose }: ModelPickerPopoverProps) {
 
         {!loading && !fetchError && catalogEntry && (
           <div className="model-provider-section">
-            {filteredModels.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                className={`model-option ${s.status.provider === catalogEntry.id && s.status.model === m.id ? 'current' : ''}`}
-                onClick={() => handleSelect(catalogEntry.id, m.id)}
-                title={(m as any).notes ?? m.label}
-              >
-                <span className="model-label">{m.label}</span>
-                {s.status.provider === catalogEntry.id && s.status.model === m.id && (
-                  <span className="model-current">●</span>
-                )}
-                {(m as any).ctx && <span className="model-ctx">{(m as any).ctx}</span>}
-                {(m as any).free && <span className="model-free">grátis</span>}
-              </button>
-            ))}
+            {freeModels.length > 0 && (
+              <>
+                <div className="model-section-header free-section">🆓 Gratuitos</div>
+                {freeModels.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`model-option free ${s.status.provider === catalogEntry.id && s.status.model === m.id ? 'current' : ''}`}
+                    onClick={() => handleSelect(catalogEntry.id, m.id)}
+                    title={(m as any).notes ?? m.label}
+                  >
+                    <span className="model-label">{m.label}</span>
+                    {s.status.provider === catalogEntry.id && s.status.model === m.id && (
+                      <span className="model-current">●</span>
+                    )}
+                    {(m as any).ctx && <span className="model-ctx">{(m as any).ctx}</span>}
+                    <span className="model-free">grátis</span>
+                  </button>
+                ))}
+              </>
+            )}
+            {paidModels.length > 0 && (
+              <>
+                <div className="model-section-header paid-section">💳 Pagos</div>
+                {paidModels.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`model-option ${s.status.provider === catalogEntry.id && s.status.model === m.id ? 'current' : ''}`}
+                    onClick={() => handleSelect(catalogEntry.id, m.id)}
+                    title={(m as any).notes ?? m.label}
+                  >
+                    <span className="model-label">{m.label}</span>
+                    {s.status.provider === catalogEntry.id && s.status.model === m.id && (
+                      <span className="model-current">●</span>
+                    )}
+                    {(m as any).ctx && <span className="model-ctx">{(m as any).ctx}</span>}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         )}
 
