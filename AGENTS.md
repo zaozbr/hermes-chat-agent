@@ -9,7 +9,12 @@
 
 ### Passo 1: Reabsorver Conhecimento
 
-Leia ESTES arquivos obrigatoriamente (nesta ordem):
+**Novas Regras Inegociáveis:**
+
+- Sempre reinstalar a extensão no VS Code Stable toda vez que for testar.
+- A cobertura mínima de testes deve ser 'não informado', ou seja, se encontrar validação coberta por tal medida, caso contrário, expandir testes.
+- E não esquecer: devo abrir uma nova janela do VS Code Stable da instalação para verificação final, onde não utilizo o Insiders nem testes simulados.
+  Leia ESTES arquivos obrigatoriamente (nesta ordem):
 
 1. **`.github/copilot-instructions.md`** — Workflow de startup + regras inline
 2. **`EXTENSIONS_INTEGRATION.md`** — Guia completo de extensões, configurações, fluxo de trabalho

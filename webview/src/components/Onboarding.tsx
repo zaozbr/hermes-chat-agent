@@ -60,17 +60,17 @@ hermes postinstall`}
       <ModelPickerSection />
 
       <section>
-        <h3>3. Passos individuais</h3>
+        <h3>3. Auto Setup</h3>
         <p className="muted" style={{ fontSize: 11, margin: '0 0 8px' }}>
-          Cada passo tem timeout, pode ser cancelado e mostra o log ao vivo. Nenhum passo lança TUI
-          interativo.
+          Clique abaixo para configurar tudo automaticamente. O processo irá guiar você passo a
+          passo.
         </p>
         <div className="row" style={{ marginBottom: 12 }}>
           <button
             onClick={() => vscode.postMessage({ type: 'run-all-install-steps' })}
             style={{ background: 'var(--accent)', color: '#fff', fontWeight: 600 }}
           >
-            ▶ Executar todos os passos (Auto Setup)
+            ▶ Iniciar Auto Setup (Executa tudo)
           </button>
         </div>
         <ol className="steps">
