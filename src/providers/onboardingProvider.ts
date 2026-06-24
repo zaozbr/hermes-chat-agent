@@ -11,6 +11,7 @@ import { acpManager } from '../acp/manager';
 import { CATALOG } from '../services/modelCatalog';
 import { configService } from '../services/configService';
 import { secretsService } from '../services/secretsService';
+import { hermesEnvService } from '../services/hermesEnvService';
 import { logger } from '../utils/logger';
 
 interface StepRuntime {
@@ -101,7 +102,14 @@ export class OnboardingProvider extends BaseWebviewProvider {
         this.postMessage({ type: 'detection', detection: this.detection });
         await this.pushSteps();
         await this.pushModelStatus();
-        this.postMessage({ type: 'catalog', providers: CATALOG });
+        // Send catalog with configured status
+        const providers: Array<(typeof CATALOG)[number] & { configured: boolean }> = [];
+        for (const p of CATALOG) {
+          if (p.id === 'custom') continue;
+          const hasKey = !!(await secretsService.getKey(p.id));
+          providers.push({ ...p, configured: hasKey });
+        }
+        this.postMessage({ type: 'catalog', providers });
         break;
       }
       case 're-detect': {
@@ -187,22 +195,41 @@ export class OnboardingProvider extends BaseWebviewProvider {
       case 'run-all-install-steps': {
         // Run every step in sequence, skipping already-done ones
         const allSteps = hermesInstaller.steps();
+        let hasMissingKey = false;
         for (const stepDef of allSteps) {
           const runtime = this.steps.get(stepDef.id);
           if (!runtime || runtime.status === 'done') continue;
           if (stepDef.id === 'setup-model' || stepDef.id === 'check-model') {
-            // These steps are driven by the model picker — skip them
+            // Check if any provider has a configured API key
+            const anyKeyConfigured = await this.hasAnyApiKey();
+            if (!anyKeyConfigured) {
+              hasMissingKey = true;
+              runtime.status = 'skipped';
+              runtime.detail =
+                '⚠️ Configure uma API Key no seletor "Provedor & Modelo" acima primeiro';
+              await this.pushSteps();
+              continue;
+            }
+            // Key exists but model not set yet — skip and let user finish setup
             runtime.status = 'skipped';
-            runtime.detail = 'Use o seletor de modelo acima';
+            runtime.detail = 'Selecione provedor + modelo no seletor acima e clique em "Salvar"';
             await this.pushSteps();
             continue;
           }
           await this.runStep(stepDef.id);
         }
-        this.postMessage({
-          type: 'info',
-          message: 'Auto-setup concluído! Configure o modelo acima.',
-        });
+        if (hasMissingKey) {
+          this.postMessage({
+            type: 'info',
+            message:
+              '⚠️ Auto-setup parcial: falta configurar API Key e modelo. Use a seção "Provedor & Modelo" acima.',
+          });
+        } else {
+          this.postMessage({
+            type: 'info',
+            message: 'Auto-setup concluído! Configure o modelo na seção "Provedor & Modelo" acima.',
+          });
+        }
         break;
       }
       case 'set-model': {
@@ -246,14 +273,65 @@ export class OnboardingProvider extends BaseWebviewProvider {
         }
         break;
       }
+      case 'set-api-key': {
+        const providerId = String(msg.provider ?? '').trim();
+        const apiKey = String(msg.apiKey ?? '').trim();
+        if (!providerId || !apiKey) {
+          this.postMessage({ type: 'error', message: 'provider and apiKey are required' });
+          return;
+        }
+        if (apiKey.length < 8) {
+          this.postMessage({ type: 'error', message: 'API key seems too short (min 8 chars)' });
+          return;
+        }
+        try {
+          // Find the env var for this provider from catalog
+          const catalogEntry = CATALOG.find((p) => p.id === providerId);
+          const envVar = catalogEntry?.envVars?.[0];
+          // Save to SecretStorage
+          await secretsService.setKey(providerId, apiKey);
+          // Save to Hermes .env if we know the env var
+          if (envVar) {
+            await hermesEnvService.setKey(envVar, apiKey);
+          }
+          // Notify webview
+          this.postMessage({
+            type: 'api-key-saved',
+            provider: providerId,
+            configured: true,
+          });
+          this.postMessage({
+            type: 'info',
+            message: `✅ API key saved for ${catalogEntry?.label ?? providerId}`,
+          });
+        } catch (e) {
+          this.postMessage({
+            type: 'error',
+            message: `Failed to save API key: ${(e as Error).message}`,
+          });
+        }
+        break;
+      }
       case 'get-catalog': {
-        const configured: typeof CATALOG = [];
+        // Return ALL providers with configured status so UI can show lock/unlock state
+        const providers: Array<(typeof CATALOG)[number] & { configured: boolean }> = [];
         for (const p of CATALOG) {
           if (p.id === 'custom') continue;
           const hasKey = !!(await secretsService.getKey(p.id));
-          if (hasKey) configured.push(p);
+          providers.push({ ...p, configured: hasKey });
         }
-        this.postMessage({ type: 'catalog', providers: configured });
+        this.postMessage({ type: 'catalog', providers });
+        break;
+      }
+      case 'open-url': {
+        const url = String(msg.url ?? '').trim();
+        if (url) {
+          try {
+            await vscode.env.openExternal(vscode.Uri.parse(url));
+          } catch (e) {
+            logger.error(`Failed to open URL: ${url}`, e as Error);
+          }
+        }
         break;
       }
       case 'validate-model': {
@@ -353,5 +431,15 @@ export class OnboardingProvider extends BaseWebviewProvider {
     } finally {
       runtime.cancel = undefined;
     }
+  }
+
+  /** Check if any provider has a configured API key in SecretStorage */
+  private async hasAnyApiKey(): Promise<boolean> {
+    for (const p of CATALOG) {
+      if (p.id === 'custom') continue;
+      const key = await secretsService.getKey(p.id);
+      if (key) return true;
+    }
+    return false;
   }
 }

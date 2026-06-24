@@ -100,6 +100,7 @@ export interface CatalogProvider {
   label: string;
   envVars: string[];
   baseUrl: string;
+  configured: boolean;
   models: Array<{ id: string; label: string; ctx?: string; free: boolean; notes?: string }>;
 }
 
@@ -397,6 +398,15 @@ class Store {
         break;
       case 'catalog':
         this.set((s) => ({ ...s, catalog: msg.providers ?? [] }));
+        break;
+      case 'api-key-saved':
+        // Update the catalog to reflect the newly configured key
+        this.set((s) => ({
+          ...s,
+          catalog: s.catalog.map((p) =>
+            p.id === msg.provider ? { ...p, configured: msg.configured ?? true } : p,
+          ),
+        }));
         break;
       case 'provider-models':
         this.set((s) => {
@@ -777,6 +787,11 @@ class Store {
 
   getCatalog() {
     vscode.postMessage({ type: 'get-catalog' });
+  }
+
+  /** Save an API key for a given provider */
+  setApiKey(provider: string, apiKey: string) {
+    vscode.postMessage({ type: 'set-api-key', provider, apiKey });
   }
 
   validateModel() {
