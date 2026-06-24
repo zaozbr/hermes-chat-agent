@@ -52,7 +52,7 @@ jobs:
 
       - name: Generate changelog
         id: changelog
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: tags } = await github.rest.repos.listTags({
