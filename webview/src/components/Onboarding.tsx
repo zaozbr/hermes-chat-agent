@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../state/store';
 import { vscode } from '../utils/vscode';
+import { StepRow } from './StepRow';
 
 /** Provider-specific URL for API key generation */
 function getKeyUrl(providerId: string): string {
@@ -140,63 +141,7 @@ hermes postinstall`}
   );
 }
 
-function StepRow({
-  step,
-  log,
-  onRun,
-  onCancel,
-}: {
-  step: { id: string; label: string; description: string; status: string; detail?: string };
-  log: string;
-  onRun: () => void;
-  onCancel: () => void;
-}) {
-  const isRunning = step.status === 'running';
-  return (
-    <li className={`step ${step.status}`}>
-      <div className="step-status">
-        {step.status === 'pending' && '○'}
-        {step.status === 'running' && '⟳'}
-        {step.status === 'done' && '✓'}
-        {step.status === 'failed' && '✗'}
-        {step.status === 'skipped' && '–'}
-      </div>
-      <div className="step-body">
-        <strong>{step.label}</strong>
-        <p className="muted">{step.description}</p>
-        {step.detail && step.status === 'failed' && <pre className="err">{step.detail}</pre>}
-        {step.detail && step.status === 'done' && (
-          <p className="muted" style={{ fontSize: 11, marginTop: 4 }}>
-            → {step.detail}
-          </p>
-        )}
-        {log && (
-          <details>
-            <summary>log ({log.length} chars)</summary>
-            <pre className="out">{log.slice(-8000)}</pre>
-          </details>
-        )}
-      </div>
-      <div className="step-actions">
-        {isRunning ? (
-          <button onClick={onCancel} title="Cancelar este passo">
-            ⏹ Cancelar
-          </button>
-        ) : (
-          <button
-            onClick={onRun}
-            disabled={step.status === 'done'}
-            title={step.status === 'done' ? 'Já concluído' : 'Rodar este passo'}
-          >
-            {step.status === 'failed' ? '↻ Tentar' : 'Rodar'}
-          </button>
-        )}
-      </div>
-    </li>
-  );
-}
-
-/** Configuration sub-component: provider/model picker + API key + auto-setup */
+/** Configuration sub-component: provider/model picker + API key */
 function ConfigurationSection() {
   const s = useStore();
 
@@ -375,47 +320,40 @@ function ConfigurationSection() {
           {isConfigured && (
             <div>
               <p style={{ fontSize: 12, margin: '0 0 8px' }}>
-                ✅ API Key já configurada para <strong>{providerEntry?.label}</strong>. Deseja
-                substituir?
+                ✅ API Key configurada para <strong>{providerEntry?.label}</strong>. Para trocar:
               </p>
-              <button
-                onClick={() => openUrl(getKeyUrl(provider))}
-                style={{ fontSize: 12, marginRight: 8 }}
-              >
-                🌐 Abrir página de API Keys
-              </button>
-              <details>
-                <summary style={{ fontSize: 12, cursor: 'pointer', marginTop: 8 }}>
-                  🔑 Substituir chave
-                </summary>
-                <label style={{ display: 'block', marginTop: 8 }}>
-                  <strong>Nova chave:</strong>
-                  <input
-                    type="password"
-                    value={apiKeyInput}
-                    onChange={(e) => setApiKeyInput(e.target.value)}
-                    placeholder="Cole a nova chave aqui"
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      boxSizing: 'border-box',
-                      marginTop: 4,
-                      padding: '6px 8px',
-                    }}
-                  />
-                </label>
-                <button
-                  onClick={handleSaveApiKey}
-                  disabled={!apiKeyInput.trim() || savingKey}
-                  style={{
-                    marginTop: 8,
-                    background: 'var(--vscode-button-background, #007acc)',
-                    color: '#fff',
-                  }}
-                >
-                  {savingKey ? '💾 Salvando...' : '💾 Substituir API Key'}
+              <div className="row">
+                <button onClick={() => openUrl(getKeyUrl(provider))} style={{ fontSize: 12 }}>
+                  🌐 Abrir página de API Keys
                 </button>
-              </details>
+              </div>
+              <label style={{ display: 'block', marginTop: 8 }}>
+                <strong>Nova chave:</strong>
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder="Cole a nova chave aqui"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    marginTop: 4,
+                    padding: '6px 8px',
+                  }}
+                />
+              </label>
+              <button
+                onClick={handleSaveApiKey}
+                disabled={!apiKeyInput.trim() || savingKey}
+                style={{
+                  marginTop: 8,
+                  background: 'var(--vscode-button-background, #007acc)',
+                  color: '#fff',
+                }}
+              >
+                {savingKey ? '💾 Salvando...' : '💾 Substituir API Key'}
+              </button>
             </div>
           )}
         </div>
@@ -434,46 +372,6 @@ function ConfigurationSection() {
           {s.modelValidation.ok ? '✓' : '⚠'} {s.modelValidation.detail}
         </div>
       )}
-
-      {/* ── Auto Setup (integrado) ─────────────────────────────── */}
-      <div
-        style={{
-          marginTop: 20,
-          padding: 12,
-          border: '1px solid var(--vscode-input-border, #ccc)',
-          borderRadius: 6,
-        }}
-      >
-        <h4 style={{ margin: '0 0 4px' }}>⚙️ Auto Setup</h4>
-        <p className="muted" style={{ fontSize: 11, margin: '0 0 8px' }}>
-          Executa todos os passos de instalação pendentes (detecção, dependências, etc.).
-          {!isConfigured && (
-            <strong style={{ color: 'var(--vscode-errorForeground, #f14c4c)' }}>
-              {' '}
-              ⚠ Configure a API Key e o modelo antes de rodar.
-            </strong>
-          )}
-        </p>
-        <div className="row" style={{ marginBottom: 12 }}>
-          <button
-            onClick={() => vscode.postMessage({ type: 'run-all-install-steps' })}
-            style={{ background: 'var(--accent)', color: '#fff', fontWeight: 600 }}
-          >
-            ▶ Iniciar Auto Setup (Executa tudo)
-          </button>
-        </div>
-        <ol className="steps">
-          {s.installSteps.map((step) => (
-            <StepRow
-              key={step.id}
-              step={step}
-              log={s.stepLogs[step.id] ?? ''}
-              onRun={() => vscode.postMessage({ type: 'run-install-step', id: step.id })}
-              onCancel={() => vscode.postMessage({ type: 'cancel-install-step', id: step.id })}
-            />
-          ))}
-        </ol>
-      </div>
     </div>
   );
 }

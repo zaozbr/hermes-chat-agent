@@ -356,6 +356,9 @@ export class ChatPanelProvider extends BaseWebviewProvider {
           const baseUrl = configService.getBaseUrl(provider) || catalogEntry?.baseUrl;
           await hermesInstaller.setModel(det.path, provider, model, baseUrl);
           await this.pushModelStatus();
+          // Restart ACP so it picks up the new model configuration
+          await acpManager.restart(det);
+          this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
           this.postMessage({ type: 'info', message: `Model set: ${provider} / ${model}` });
         } catch (e) {
           this.postMessage({ type: 'error', message: (e as Error).message });
@@ -414,6 +417,38 @@ export class ChatPanelProvider extends BaseWebviewProvider {
           this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
         } catch (e) {
           this.postMessage({ type: 'error', message: `Connect failed: ${(e as Error).message}` });
+        }
+        break;
+      }
+      case 'run-all-install-steps': {
+        const provider = String(msg.provider ?? '').trim();
+        let model = String(msg.model ?? '').trim();
+        if (!provider && !model) {
+          this.postMessage({ type: 'error', message: 'Selecione um provedor e modelo primeiro.' });
+          return;
+        }
+        try {
+          const det = await hermesDetector.detect();
+          if (!det.path) {
+            this.postMessage({
+              type: 'error',
+              message: 'Hermes binary not found. Install Hermes first.',
+            });
+            return;
+          }
+          const catalogEntry = CATALOG.find((p) => p.id === provider);
+          const baseUrl = configService.getBaseUrl(provider) || catalogEntry?.baseUrl;
+          await hermesInstaller.setModel(det.path, provider, model, baseUrl);
+          await this.pushModelStatus();
+          // Restart ACP so it picks up the new model configuration
+          await acpManager.restart(det);
+          this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
+          this.postMessage({ type: 'info', message: `✅ Auto setup: ${provider} / ${model}` });
+        } catch (e) {
+          this.postMessage({
+            type: 'error',
+            message: `Auto setup falhou: ${(e as Error).message}`,
+          });
         }
         break;
       }

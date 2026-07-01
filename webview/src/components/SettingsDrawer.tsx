@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useStore } from '../state/store';
-import { SetupPanel } from './panels/SetupPanel';
 import { ConfigPanel } from './panels/ConfigPanel';
 import { McpPanel } from './panels/McpPanel';
 import { TweaksPanel } from './panels/TweaksPanel';
 
 const TABS = [
-  { id: 'setup', icon: '✦', label: 'Setup' },
-  { id: 'config', icon: '⚙', label: 'API Keys' },
+  { id: 'config', icon: '⚙', label: 'Config' },
   { id: 'mcp', icon: '🔌', label: 'MCP' },
   { id: 'tweaks', icon: '⚡', label: 'Tweaks' },
 ] as const;
@@ -21,7 +19,7 @@ export function SettingsDrawer({
   s: ReturnType<typeof useStore>;
   onClose: () => void;
 }) {
-  const [settingsTab, setSettingsTab] = useState<SettingsTab>('setup');
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>('config');
 
   return (
     <div className="settings-content">
@@ -44,7 +42,6 @@ export function SettingsDrawer({
         ))}
       </nav>
       <div className="settings-body">
-        {settingsTab === 'setup' && <SetupPanel s={s} />}
         {settingsTab === 'config' && <ConfigPanel s={s} />}
         {settingsTab === 'mcp' && <McpPanel s={s} />}
         {settingsTab === 'tweaks' && <TweaksPanel s={s} />}

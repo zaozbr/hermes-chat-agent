@@ -12,12 +12,23 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
   const [storedUrls, setStoredUrls] = useState<Record<string, string>>({});
   const [editingUrlProvider, setEditingUrlProvider] = useState<string | null>(null);
   const [urlValue, setUrlValue] = useState('');
+
+  // Provider/model state for auto-setup
   const [showUrlSaved, setShowUrlSaved] = useState<string | null>(null);
+  const [autoProvider, setAutoProvider] = useState<string>('');
+  const [autoModel, setAutoModel] = useState<string>('');
+  const [customModel, setCustomModel] = useState<string>('');
 
   useEffect(() => {
     vscode.postMessage({ type: 'list-api-keys' });
     vscode.postMessage({ type: 'list-base-urls' });
+    s.getCatalog();
   }, []);
+
+  useEffect(() => {
+    if (s.modelStatus.provider && !autoProvider) setAutoProvider(s.modelStatus.provider);
+    if (s.modelStatus.model && !autoModel) setAutoModel(s.modelStatus.model);
+  }, [s.modelStatus.provider, s.modelStatus.model]);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -246,6 +257,94 @@ export function ConfigPanel({ s }: { s: ReturnType<typeof useStore> }) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* ── Provider / Model picker + Auto Setup ──────────────── */}
+        <div className="config-group">
+          <label>Provedor & Modelo</label>
+          <div className="picker" style={{ marginTop: 8 }}>
+            <select
+              value={autoProvider}
+              onChange={(e) => {
+                setAutoProvider(e.target.value);
+                setAutoModel('');
+              }}
+            >
+              <option value="">— escolha provedor —</option>
+              {s.catalog.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.configured ? '🔓 ' : '🔒 '}
+                  {p.label}
+                  {p.envVars.length > 0 ? ` (chave${p.configured ? ' ✓' : ' ✗'})` : ''}
+                </option>
+              ))}
+            </select>
+            {(() => {
+              const entry = s.catalog.find((p) => p.id === autoProvider);
+              if (!entry || entry.models.length === 0) return null;
+              const isCust = autoModel === '__custom__';
+              return (
+                <>
+                  <select value={autoModel} onChange={(e) => setAutoModel(e.target.value)}>
+                    <option value="">— escolha modelo —</option>
+                    {entry.models.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.label}
+                        {m.free ? ' ✓ free' : ''}
+                        {m.ctx ? ` · ${m.ctx}` : ''}
+                      </option>
+                    ))}
+                    <option value="__custom__">✏ Custom ID…</option>
+                  </select>
+                  {isCust && (
+                    <input
+                      type="text"
+                      value={customModel}
+                      onChange={(e) => setCustomModel(e.target.value)}
+                      placeholder="ex: meta/llama-3.3-70b-instruct"
+                      style={{ marginTop: 4 }}
+                    />
+                  )}
+                </>
+              );
+            })()}
+          </div>
+          <div className="row" style={{ marginTop: 12 }}>
+            <button
+              onClick={() => {
+                const modelVal = autoModel === '__custom__' ? customModel.trim() : autoModel;
+                if (autoProvider && modelVal) {
+                  s.setModel(autoProvider, autoModel, customModel.trim());
+                }
+              }}
+              disabled={
+                !(autoProvider && (autoModel === '__custom__' ? customModel.trim() : autoModel))
+              }
+            >
+              💾 Salvar
+            </button>
+            <button onClick={() => s.validateModel()}>🔍 Testar</button>
+            <button
+              onClick={() =>
+                vscode.postMessage({
+                  type: 'run-all-install-steps',
+                  provider: autoProvider,
+                  model: autoModel === '__custom__' ? customModel.trim() : autoModel,
+                })
+              }
+              disabled={
+                !(autoProvider && (autoModel === '__custom__' ? customModel.trim() : autoModel))
+              }
+              title="Executa auto-configuração (detecção, dependências, etc.)"
+            >
+              ▶ Auto Setup
+            </button>
+          </div>
+          {s.modelValidation && (
+            <div className={s.modelValidation.ok ? 'ok' : 'warn'} style={{ marginTop: 8 }}>
+              {s.modelValidation.ok ? '✓' : '⚠'} {s.modelValidation.detail}
+            </div>
+          )}
         </div>
       </div>
     </main>

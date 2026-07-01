@@ -85,8 +85,8 @@ export function registerCommands(context: vscode.ExtensionContext, deps: Command
     }),
 
     vscode.commands.registerCommand('hermes-agent.installHermes', async () => {
-      // Show the onboarding setup panel
-      await vscode.commands.executeCommand('hermes-agent.onboarding.focus');
+      // Setup is now integrated in the Config (gear) tab inside Chat
+      vscode.window.showInformationMessage('Configuração disponível no painel Hermes → ⚙ Config.');
     }),
 
     vscode.commands.registerCommand('hermes-agent.runDoctor', async () => {

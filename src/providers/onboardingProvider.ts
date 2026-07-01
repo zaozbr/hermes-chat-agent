@@ -195,39 +195,72 @@ export class OnboardingProvider extends BaseWebviewProvider {
       case 'run-all-install-steps': {
         // Run every step in sequence, skipping already-done ones
         const allSteps = hermesInstaller.steps();
-        let hasMissingKey = false;
+        const providerFromUI = String(msg.provider ?? '').trim();
+        const modelFromUI = String(msg.model ?? '').trim();
+        let hasErrors = false;
         for (const stepDef of allSteps) {
           const runtime = this.steps.get(stepDef.id);
           if (!runtime || runtime.status === 'done') continue;
-          if (stepDef.id === 'setup-model' || stepDef.id === 'check-model') {
-            // Check if any provider has a configured API key
-            const anyKeyConfigured = await this.hasAnyApiKey();
-            if (!anyKeyConfigured) {
-              hasMissingKey = true;
+          if (stepDef.id === 'setup-model') {
+            if (providerFromUI && modelFromUI) {
+              // User selected a model in the UI — run it now
+              try {
+                await this.handleSetModel(providerFromUI, modelFromUI);
+                runtime.status = 'done';
+                runtime.detail = `${providerFromUI} / ${modelFromUI}`;
+                await this.pushSteps();
+              } catch (e) {
+                hasErrors = true;
+                runtime.status = 'failed';
+                runtime.detail = (e as Error).message;
+                await this.pushSteps();
+              }
+            } else {
+              // No model selected — skip
               runtime.status = 'skipped';
-              runtime.detail =
-                '⚠️ Configure uma API Key no seletor "Provedor & Modelo" acima primeiro';
+              runtime.detail = 'Selecione provedor + modelo no seletor acima';
               await this.pushSteps();
-              continue;
             }
-            // Key exists but model not set yet — skip and let user finish setup
-            runtime.status = 'skipped';
-            runtime.detail = 'Selecione provedor + modelo no seletor acima e clique em "Salvar"';
+            continue;
+          }
+          if (stepDef.id === 'check-model') {
+            // Just mark done — set-model already validated
+            runtime.status = 'done';
+            runtime.detail =
+              providerFromUI && modelFromUI ? `${providerFromUI} / ${modelFromUI}` : 'ok';
             await this.pushSteps();
             continue;
           }
           await this.runStep(stepDef.id);
         }
-        if (hasMissingKey) {
+        // Ensure ACP is running after setup (may have been installed just now)
+        if (this.detection?.path) {
+          const status = acpManager.getStatus();
+          if (!status.connected) {
+            try {
+              await acpManager.start(this.detection);
+              this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
+            } catch (e) {
+              logger.warn(`ACP start after auto-setup failed: ${(e as Error).message}`);
+            }
+          }
+        }
+        if (hasErrors) {
+          this.postMessage({
+            type: 'error',
+            message: '⚠️ Auto-setup parcial: alguns passos falharam. Verifique os logs acima.',
+          });
+        } else if (!providerFromUI || !modelFromUI) {
           this.postMessage({
             type: 'info',
             message:
-              '⚠️ Auto-setup parcial: falta configurar API Key e modelo. Use a seção "Provedor & Modelo" acima.',
+              'Auto-setup concluído! Selecione provedor + modelo e clique em "Salvar" para finalizar.',
           });
         } else {
           this.postMessage({
             type: 'info',
-            message: 'Auto-setup concluído! Configure o modelo na seção "Provedor & Modelo" acima.',
+            message:
+              '✅ Auto-setup concluído! Provedor/modelo configurados. O chat está pronto para uso.',
           });
         }
         break;
@@ -267,6 +300,9 @@ export class OnboardingProvider extends BaseWebviewProvider {
             s2.detail = `${provider} / ${model}`;
             await this.pushSteps();
           }
+          // Restart ACP so it picks up the new model configuration
+          await acpManager.restart(this.detection);
+          this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
           this.postMessage({ type: 'info', message: `Model set: ${provider} / ${model}` });
         } catch (e) {
           this.postMessage({ type: 'error', message: (e as Error).message });
@@ -433,13 +469,17 @@ export class OnboardingProvider extends BaseWebviewProvider {
     }
   }
 
-  /** Check if any provider has a configured API key in SecretStorage */
-  private async hasAnyApiKey(): Promise<boolean> {
-    for (const p of CATALOG) {
-      if (p.id === 'custom') continue;
-      const key = await secretsService.getKey(p.id);
-      if (key) return true;
+  /** Set the model via hermes CLI, restart ACP, and update step status */
+  private async handleSetModel(provider: string, model: string): Promise<void> {
+    if (!this.detection?.path) {
+      throw new Error('hermes binary not found');
     }
-    return false;
+    const catalogEntry = CATALOG.find((p) => p.id === provider);
+    const baseUrl = configService.getBaseUrl(provider) || catalogEntry?.baseUrl;
+    await hermesInstaller.setModel(this.detection.path, provider, model, baseUrl);
+    // Restart ACP so it picks up the new model config
+    await acpManager.restart(this.detection);
+    this.postMessage({ type: 'acp-status', payload: acpManager.getStatus() });
+    await this.pushModelStatus();
   }
 }

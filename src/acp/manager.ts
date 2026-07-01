@@ -205,6 +205,16 @@ class AcpManager extends EventEmitter {
     terminalRegistry.releaseAll();
   }
 
+  /**
+   * Restart the ACP process. Safely stops any running instance and
+   * starts a fresh one. This is called after model configuration so
+   * the agent picks up the new provider / model / base URL.
+   */
+  async restart(detection: HermesDetection): Promise<void> {
+    this.stop();
+    await this.start(detection);
+  }
+
   get connection(): any {
     return this.conn;
   }
